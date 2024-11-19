@@ -1,11 +1,13 @@
 <?php
 /*
 Plugin Name: DSS Cron
+Plugin URI: https://soderlind.no/dss-cron
 Description: Run wp-cron on all public sites in a multisite network.
-Version: 1.0
+Version: 1.0.1
 Author: Per Soderlind
 Author URI: https://soderlind.no
 License: GPL2
+License URI: https://www.gnu.org/licenses/gpl-2.0.html
 Network: true
 */
 
@@ -73,4 +75,4 @@ function dss_cron_activation() {
 function dss_cron_deactivation() {
     flush_rewrite_rules();
 }
-?>
+
