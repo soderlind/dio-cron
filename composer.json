@@ -1,0 +1,6 @@
+{
+	"name": "soderlind/dss-cron",
+	"description": "Run wp-cron on all public sites in a multisite network",
+	"homepage": "https://github.com/soderlind/dss-cron",
+	"require": {}
+}

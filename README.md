@@ -9,7 +9,7 @@ DSS Cron is a WordPress plugin designed to run wp-cron on all public sites in a 
 ## Installation
 
 1. Upload the `dss-cron` folder to the `/wp-content/plugins/` directory.
-2. Activate the plugin through the 'Plugins' menu in WordPress.
+2. Network activate the plugin through the 'Network->Plugins' menu in WordPress.
 3. The plugin will automatically add a custom rewrite rule and tag for the cron endpoint.
 
 ## Usage
