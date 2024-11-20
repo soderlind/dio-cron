@@ -62,7 +62,19 @@ add_filter('dss_cron_number_of_sites', function($sites_per_request) {
 });
 ```
 
+Adjust transient expiration time (default: 1 hour):
+
+```php
+add_filter('dss_cron_transient_expiration', function($expiration) {
+	return HOUR_IN_SECONDS;
+});
+```
+
 ## 📝 Changelog
+
+### 1.0.9
+
+- Add sites caching using transients to improve performance.
 
 ### 1.0.8
 

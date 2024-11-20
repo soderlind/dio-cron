@@ -10,7 +10,7 @@
  * Plugin Name: DSS Cron
  * Plugin URI: https://github.com/soderlind/dss-cron
  * Description: Run wp-cron on all public sites in a multisite network.
- * Version: 1.0.8
+ * Version: 1.0.9
  * Author: Per Soderlind
  * Author URI: https://soderlind.no
  * License: GPL-2.0+
@@ -57,24 +57,24 @@ function dss_run_cron_on_all_sites(): void {
 		return;
 	}
 
-	$sites = get_sites( [ 
-		'public'   => 1,
-		'archived' => 0,
-		'deleted'  => 0,
-		'spam'     => 0,
-		'number'   => apply_filters( 'dss_cron_number_of_sites', 200 ),
+	$sites = get_site_transient( 'dss_cron_sites' );
+	if ( false === $sites ) {
+		$sites = get_sites( [ 
+			'public'   => 1,
+			'archived' => 0,
+			'deleted'  => 0,
+			'spam'     => 0,
+			'number'   => apply_filters( 'dss_cron_number_of_sites', 200 ),
+		] );
+		set_site_transient( 'dss_cron_sites', $sites, apply_filters( 'dss_cron_sites_transient', HOUR_IN_SECONDS ) );
+	}
 
-	] );
 	foreach ( (array) $sites as $site ) {
 		$url      = $site->__get( 'siteurl' );
 		$response = wp_remote_get( $url . '/wp-cron.php?doing_wp_cron', [ 
 			'blocking'  => false,
 			'sslverify' => false,
 		] );
-		// if ( is_wp_error( $response ) ) {
-		// 	ray( 'Failed to run wp-cron for site: ' . $url . '. Error: ' . $response->get_error_message() );
-		// }
-		// ray( [ 'Running wp-cron for site: ' => $url, 'Response' => $response ] );
 	}
 }
 

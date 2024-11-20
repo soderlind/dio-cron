@@ -3,7 +3,7 @@ Contributors: PerS
 Tags: cron, multisite, wp-cron
 Requires at least: 5.0
 Tested up to: 6.7
-Stable tag: 1.0.8
+Stable tag: 1.0.9
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -73,8 +73,18 @@ add_filter('dss_cron_number_of_sites', function($sites_per_request) {
 });
 `
 
+Adjust sites cache duration (default: 1 hour):
+
+`
+add_filter('dss_cron_sites_transient', function($duration) {
+	return HOUR_IN_SECONDS * 2; // 2 hours
+});
+`
 
 == Changelog ==
+
+= 1.0.9 =
+* Add sites caching using transients to improve performance.
 
 = 1.0.8 =
 * Update documentation
