@@ -3,7 +3,7 @@ Contributors: PerS
 Tags: cron, multisite, wp-cron
 Requires at least: 5.0
 Tested up to: 6.7
-Stable tag: 1.0.9
+Stable tag: 1.0.10
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -45,7 +45,7 @@ on:
     - cron: '*/5 * * * *'
 
 env:
-  CRON_ENDPOINT: 'https://example/dss-cron/'
+  CRON_ENDPOINT: 'https://example/dss-cron/?ga'
 
 jobs:
   trigger_cron:
@@ -82,6 +82,9 @@ add_filter('dss_cron_sites_transient', function($duration) {
 `
 
 == Changelog ==
+
+= 1.0.10 =
+* Added GitHub Actions output format when using ?ga parameter
 
 = 1.0.9 =
 * Add sites caching using transients to improve performance.

@@ -34,7 +34,7 @@ on:
     - cron: '*/5 * * * *'
 
 env:
-  CRON_ENDPOINT: 'https://example/dss-cron/'
+  CRON_ENDPOINT: 'https://example/dss-cron/?ga'
 
 jobs:
   trigger_cron:
@@ -71,6 +71,10 @@ add_filter('dss_cron_transient_expiration', function($expiration) {
 ```
 
 ## ⚙️ Changelog
+
+### 1.0.10
+
+- Added GitHub Actions output format when using ?ga parameter
 
 ### 1.0.9
 

@@ -10,7 +10,7 @@
  * Plugin Name: DSS Cron
  * Plugin URI: https://github.com/soderlind/dss-cron
  * Description: Run wp-cron on all public sites in a multisite network.
- * Version: 1.0.9
+ * Version: 1.0.10
  * Author: Per Soderlind
  * Author URI: https://soderlind.no
  * License: GPL-2.0+
@@ -35,8 +35,10 @@ add_action( 'template_redirect', __NAMESPACE__ . '\dss_cron_template_redirect' )
  * Initialize the custom rewrite rule and tag for the cron endpoint.
  */
 function dss_cron_init() {
-	add_rewrite_rule( '^dss-cron/?', 'index.php?dss_cron=1', 'top' );
+	add_rewrite_rule( '^dss-cron/?$', 'index.php?dss_cron=1', 'top' );
+	add_rewrite_rule( '^dss-cron/?\?ga', 'index.php?dss_cron=1&ga=1', 'top' );
 	add_rewrite_tag( '%dss_cron%', '1' );
+	add_rewrite_tag( '%ga%', '1' );
 }
 
 /**
@@ -44,7 +46,14 @@ function dss_cron_init() {
  */
 function dss_cron_template_redirect(): void {
 	if ( get_query_var( 'dss_cron' ) == 1 ) {
-		dss_run_cron_on_all_sites();
+		$result = dss_run_cron_on_all_sites();
+		if ( isset( $_GET[ 'ga' ] ) ) {
+			if ( ! $result[ 'success' ] ) {
+				echo "::error::{$result[ 'message' ]}\n";
+			} else {
+				echo "::notice::Running wp-cron on {$result[ 'count' ]} sites\n";
+			}
+		}
 		exit;
 	}
 }
@@ -52,9 +61,13 @@ function dss_cron_template_redirect(): void {
 /**
  * Run wp-cron on all public sites in the multisite network.
  */
-function dss_run_cron_on_all_sites(): void {
+function dss_run_cron_on_all_sites(): array {
 	if ( ! is_multisite() ) {
-		return;
+		return [ 
+			'success' => false,
+			'message' => 'This plugin requires WordPress Multisite',
+			'count'   => 0,
+		];
 	}
 
 	$sites = get_site_transient( 'dss_cron_sites' );
@@ -69,13 +82,41 @@ function dss_run_cron_on_all_sites(): void {
 		set_site_transient( 'dss_cron_sites', $sites, apply_filters( 'dss_cron_sites_transient', HOUR_IN_SECONDS ) );
 	}
 
+	if ( empty( $sites ) ) {
+		return [ 
+			'success' => false,
+			'message' => 'No public sites found in the network',
+			'count'   => 0,
+		];
+	}
+
+	$errors = [];
 	foreach ( (array) $sites as $site ) {
 		$url      = $site->__get( 'siteurl' );
 		$response = wp_remote_get( $url . '/wp-cron.php?doing_wp_cron', [ 
-			'blocking'  => false,
+			'blocking'  => true, // temporary set to true to catch errors
 			'sslverify' => false,
+			'timeout'   => 5,
 		] );
+
+		if ( is_wp_error( $response ) ) {
+			$errors[] = sprintf( 'Error for %s: %s', $url, $response->get_error_message() );
+		}
 	}
+
+	if ( ! empty( $errors ) ) {
+		return [ 
+			'success' => false,
+			'message' => implode( "\n", $errors ),
+			'count'   => count( (array) $sites ),
+		];
+	}
+
+	return [ 
+		'success' => true,
+		'message' => '',
+		'count'   => count( (array) $sites ),
+	];
 }
 
 /**
