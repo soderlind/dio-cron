@@ -18,6 +18,20 @@ The plugin hooks into a custom endpoint to run the cron job. It adds a rewrite r
 
 ## Changelog
 
+### 1.0.4
+
+- Add namespace
+- Tested up to WordPress 6.7
+- Updated plugin description with license information.
+
+### 1.0.3
+
+- Fixed version compatibility
+
+### 1.0.2
+
+- Updated plugin description and tested up to version.
+
 ### 1.0.1
 
 - Initial release.
