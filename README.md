@@ -18,6 +18,10 @@ The plugin hooks into a custom endpoint to run the cron job. It adds a rewrite r
 
 ## Changelog
 
+### 1.0.5
+
+- Update composer.json with metadata
+
 ### 1.0.4
 
 - Add namespace
