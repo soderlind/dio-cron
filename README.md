@@ -18,6 +18,10 @@ The plugin hooks into a custom endpoint to run the cron job. It adds a rewrite r
 
 ## Changelog
 
+### 1.0.7
+
+- Set the number of sites to 200. You can use the `add_filter( 'dss_cron_number_of_sites', function() { return 100; } );` to change the number of sites per request.
+
 ### 1.0.6
 
 - Make plugin faster by using `$site->__get( 'siteurl' )` instead of `get_site_url( $site->blog_id )`. This prevents use of `switch_to_blog()` and `restore_current_blog()` functions. They are expensive and slow down the plugin.
