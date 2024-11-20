@@ -18,6 +18,12 @@ The plugin hooks into a custom endpoint to run the cron job. It adds a rewrite r
 
 ## Changelog
 
+### 1.0.6
+
+- Make plugin faster by using `$site->__get( 'siteurl' )` instead of `get_site_url( $site->blog_id )`. This prevents use of `switch_to_blog()` and `restore_current_blog()` functions. They are expensive and slow down the plugin.
+- For `wp_remote_get`, set `blocking` to `false`. This will allow the request to be non-blocking and not wait for the response.
+- For `wp_remote_get`, set `sslverify` to `false`. This will allow the request to be non-blocking and not wait for the response.
+
 ### 1.0.5
 
 - Update composer.json with metadata
