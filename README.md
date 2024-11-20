@@ -70,7 +70,7 @@ add_filter('dss_cron_transient_expiration', function($expiration) {
 });
 ```
 
-## 📝 Changelog
+## ⚙️ Changelog
 
 ### 1.0.9
 
