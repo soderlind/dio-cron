@@ -1,22 +1,72 @@
 # DSS Cron
 
-Run wp-cron on all public sites in a multisite network.
+> Run wp-cron on all public sites in a multisite network
 
-## Description
+## 🚀 Quick Start
 
-DSS Cron is a WordPress plugin designed to run wp-cron on all public sites in a multisite network. This ensures that scheduled tasks are executed across all sites in the network.
+1. Upload `dss-cron` to `/wp-content/plugins/`
+2. Network activate via 'Network->Plugins'
+3. Disable WordPress default cron in `wp-config.php`:
+   ```php
+   define('DISABLE_WP_CRON', true);
+   ```
 
-## Installation
+## 🔧 Configuration
 
-1. Upload the `dss-cron` folder to the `/wp-content/plugins/` directory.
-2. Network activate the plugin through the 'Network->Plugins' menu in WordPress.
-3. The plugin will automatically add a custom rewrite rule and tag for the cron endpoint.
+The plugin creates an endpoint at /dss-cron that triggers cron jobs across your network.
 
-## Usage
+Usage: `https://example.com/dss-cron`
 
-The plugin hooks into a custom endpoint to run the cron job. It adds a rewrite rule and tag for the endpoint `dss-cron`. When this endpoint is accessed, the plugin will run wp-cron on all public sites in the multisite network.
+## Trigger Options
 
-## Changelog
+1. System Crontab (every 5 minutes):
+
+```bash
+*/5 * * * * curl -s https://example.com/dss-cron
+```
+
+2. GitHub Actions (every 5 minutes):
+
+```yaml
+name: DSS Cron Job
+on:
+  schedule:
+    - cron: '*/5 * * * *'
+
+env:
+  CRON_ENDPOINT: 'https://example/dss-cron/'
+
+jobs:
+  trigger_cron:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - run: |
+          curl -X GET ${{ env.CRON_ENDPOINT }} \
+            --connect-timeout 10 \
+            --max-time 30 \
+            --retry 3 \
+            --retry-delay 5 \
+            --silent \
+            --show-error \
+            --fail
+```
+
+## Customization
+
+Adjust maximum sites processed per request (default: 200):
+
+```php
+add_filter('dss_cron_number_of_sites', function($sites_per_request) {
+	return 200;
+});
+```
+
+## 📝 Changelog
+
+### 1.0.8
+
+- Update documentation.
 
 ### 1.0.7
 
@@ -50,6 +100,12 @@ The plugin hooks into a custom endpoint to run the cron job. It adds a rewrite r
 
 - Initial release.
 
-## License
+## Copyright and License
 
-This plugin is licensed under the GPL2 license. See the [LICENSE](https://www.gnu.org/licenses/gpl-2.0.html) file for more information.
+DSS Cron is copyright 2024 Per Soderlind
+
+DSS Cron is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 2 of the License, or (at your option) any later version.
+
+DSS Cron is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+
+You should have received a copy of the GNU Lesser General Public License along with the Extension. If not, see http://www.gnu.org/licenses/.
