@@ -22,9 +22,9 @@ Adding ?ga to the URL (e.g., `https://example.com/dss-cron?ga`) will output resu
 - Success: `::notice::Running wp-cron on X sites`
 - Error: `::error::Error message`
 
-Example GitHub Action success notice:
+  Example GitHub Action success notice:
 
-<img src="assets/ga-output.png" alt="GitHub Action - Success notice" style="with: 60%">
+  <img src="assets/ga-output.png" alt="GitHub Action - Success notice" style="with: 60%">
 
 ## Trigger Options
 
