@@ -32,6 +32,8 @@ Adding ?ga to the URL (e.g., `https://example.com/dss-cron?ga`) will output resu
 - Success: `::notice::Running wp-cron on X sites`
 - Error: `::error::Error message`
 
+
+
 = Trigger Options =
 
 1. System Crontab (every 5 minutes):
