@@ -10,7 +10,7 @@
  * Plugin Name: DSS Cron
  * Plugin URI: https://github.com/soderlind/dss-cron
  * Description: Run wp-cron on all public sites in a multisite network.
- * Version: 1.0.10
+ * Version: 1.0.11
  * Author: Per Soderlind
  * Author URI: https://soderlind.no
  * License: GPL-2.0+
@@ -94,7 +94,7 @@ function dss_run_cron_on_all_sites(): array {
 	foreach ( (array) $sites as $site ) {
 		$url      = $site->__get( 'siteurl' );
 		$response = wp_remote_get( $url . '/wp-cron.php?doing_wp_cron', [ 
-			'blocking'  => true, // temporary set to true to catch errors
+			'blocking'  => false,
 			'sslverify' => false,
 			'timeout'   => 5,
 		] );

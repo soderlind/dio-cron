@@ -17,6 +17,11 @@ The plugin creates an endpoint at /dss-cron that triggers cron jobs across your 
 
 Usage: `https://example.com/dss-cron`
 
+Adding ?ga to the URL (e.g., `https://example.com/dss-cron?ga`) will output results in GitHub Actions compatible format:
+
+- Success: `::notice::Running wp-cron on X sites`
+- Error: `::error::Error message`
+
 ## Trigger Options
 
 1. System Crontab (every 5 minutes):
@@ -71,6 +76,10 @@ add_filter('dss_cron_transient_expiration', function($expiration) {
 ```
 
 ## ⚙️ Changelog
+
+### 1.0.11
+
+- Maintenance update
 
 ### 1.0.10
 

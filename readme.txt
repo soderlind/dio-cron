@@ -3,7 +3,7 @@ Contributors: PerS
 Tags: cron, multisite, wp-cron
 Requires at least: 5.0
 Tested up to: 6.7
-Stable tag: 1.0.10
+Stable tag: 1.0.11
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -27,6 +27,10 @@ DSS Cron is a WordPress plugin designed to run wp-cron on all public sites in a 
 The plugin creates an endpoint at /dss-cron that triggers cron jobs across your network.
 
 Usage: `https://example.com/dss-cron`
+
+Adding ?ga to the URL (e.g., `https://example.com/dss-cron?ga`) will output results in GitHub Actions compatible format:
+- Success: `::notice::Running wp-cron on X sites`
+- Error: `::error::Error message`
 
 = Trigger Options =
 
@@ -82,6 +86,9 @@ add_filter('dss_cron_sites_transient', function($duration) {
 `
 
 == Changelog ==
+
+= 1.0.11 =
+* Maintenance update
 
 = 1.0.10 =
 * Added GitHub Actions output format when using ?ga parameter
