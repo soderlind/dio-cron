@@ -3,7 +3,7 @@ Contributors: PerS
 Tags: cron, multisite, wp-cron
 Requires at least: 5.0
 Tested up to: 6.7
-Stable tag: 1.0.11
+Stable tag: 1.0.12
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -88,6 +88,9 @@ add_filter('dss_cron_sites_transient', function($duration) {
 `
 
 == Changelog ==
+
+= 1.0.12 =
+* Refactor error message handling
 
 = 1.0.11 =
 * Maintenance update

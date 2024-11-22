@@ -81,6 +81,10 @@ add_filter('dss_cron_transient_expiration', function($expiration) {
 
 ## ⚙️ Changelog
 
+### 1.0.12
+
+- Refactor error message handling
+
 ### 1.0.11
 
 - Maintenance update
