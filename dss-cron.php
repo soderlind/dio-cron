@@ -10,7 +10,7 @@
  * Plugin Name: DSS Cron
  * Plugin URI: https://github.com/soderlind/dss-cron
  * Description: Run wp-cron on all public sites in a multisite network.
- * Version: 1.0.11
+ * Version: 1.0.12
  * Author: Per Soderlind
  * Author URI: https://soderlind.no
  * License: GPL-2.0+
@@ -33,8 +33,10 @@ add_action( 'template_redirect', __NAMESPACE__ . '\dss_cron_template_redirect' )
 
 /**
  * Initialize the custom rewrite rule and tag for the cron endpoint.
+ * 
+ * @return void
  */
-function dss_cron_init() {
+function dss_cron_init(): void {
 	add_rewrite_rule( '^dss-cron/?$', 'index.php?dss_cron=1', 'top' );
 	add_rewrite_rule( '^dss-cron/?\?ga', 'index.php?dss_cron=1&ga=1', 'top' );
 	add_rewrite_tag( '%dss_cron%', '1' );
@@ -43,6 +45,8 @@ function dss_cron_init() {
 
 /**
  * Check for the custom query variable and run the cron job if it is set.
+ * 
+ * @return void
  */
 function dss_cron_template_redirect(): void {
 	if ( get_query_var( 'dss_cron' ) == 1 ) {
@@ -60,14 +64,12 @@ function dss_cron_template_redirect(): void {
 
 /**
  * Run wp-cron on all public sites in the multisite network.
+ * 
+ * @return array
  */
 function dss_run_cron_on_all_sites(): array {
 	if ( ! is_multisite() ) {
-		return [ 
-			'success' => false,
-			'message' => 'This plugin requires WordPress Multisite',
-			'count'   => 0,
-		];
+		return create_error_response( __( 'This plugin requires WordPress Multisite', 'dss-cron' ) );
 	}
 
 	$sites = get_site_transient( 'dss_cron_sites' );
@@ -83,11 +85,7 @@ function dss_run_cron_on_all_sites(): array {
 	}
 
 	if ( empty( $sites ) ) {
-		return [ 
-			'success' => false,
-			'message' => 'No public sites found in the network',
-			'count'   => 0,
-		];
+		return create_error_response( __( 'No public sites found in the network', 'dss-cron' ) );
 	}
 
 	$errors = [];
@@ -100,16 +98,12 @@ function dss_run_cron_on_all_sites(): array {
 		] );
 
 		if ( is_wp_error( $response ) ) {
-			$errors[] = sprintf( 'Error for %s: %s', $url, $response->get_error_message() );
+			$errors[] = sprintf( __( 'Error for %s: %s', 'dss-cron' ), $url, $response->get_error_message() );
 		}
 	}
 
 	if ( ! empty( $errors ) ) {
-		return [ 
-			'success' => false,
-			'message' => implode( "\n", $errors ),
-			'count'   => count( (array) $sites ),
-		];
+		return create_error_response( implode( "\n", $errors ) );
 	}
 
 	return [ 
@@ -120,7 +114,27 @@ function dss_run_cron_on_all_sites(): array {
 }
 
 /**
+ * Create an error response.
+ *
+ * @param string $error_message
+ * @return array
+ */
+function create_error_response( $error_message ): array {
+	$response = [ 
+		[ 
+			'success' => false,
+			'message' => $error_message,
+		],
+	];
+
+
+	return $response;
+}
+
+/**
  * Flush rewrite rules on plugin activation.
+ * 
+ * @return void
  */
 function dss_cron_activation(): void {
 	dss_cron_init();
@@ -129,6 +143,8 @@ function dss_cron_activation(): void {
 
 /**
  * Flush rewrite rules on plugin deactivation.
+ * 
+ * @return void
  */
 function dss_cron_deactivation(): void {
 	flush_rewrite_rules();

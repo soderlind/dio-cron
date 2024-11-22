@@ -15,7 +15,8 @@
 		"wordpress",
 		"wp",
 		"multisite",
-		"cron"
+		"cron",
+		"github actions"
 	],
 	"support": {
 		"issues": "https://github.com/soderlind/dss-cron/issues"
