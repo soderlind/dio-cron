@@ -1,6 +1,8 @@
 # DSS Cron
 
-> Run wp-cron on all public sites in a multisite network
+Run wp-cron on all public sites in a multisite network
+
+> You could have done this with a simple cron job. Why use this plugin? I have a cluster of WordPress sites. I did run a shell script calling wp cli, but the race condition was a problem. I needed a way to run wp-cron on all sites without overlapping. This plugin was created to solve that problem.
 
 ## 🚀 Quick Start
 
