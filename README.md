@@ -13,6 +13,12 @@ Run wp-cron on all public sites in a multisite network
    define('DISABLE_WP_CRON', true);
    ```
 
+Also available via Composer:
+
+```bash
+composer require soderlind/dss-cron
+```
+
 ## 🔧 Configuration
 
 The plugin creates an endpoint at /dss-cron that triggers cron jobs across your network.
