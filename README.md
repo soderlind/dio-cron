@@ -10,7 +10,7 @@ Run wp-cron on all public sites in a multisite network
 2. Network activate via 'Network->Plugins'
 3. Disable WordPress default cron in `wp-config.php`:
    ```php
-   define('DISABLE_WP_CRON', true);
+   define( 'DISABLE_WP_CRON', true );
    ```
 
 Also available via Composer:
@@ -74,7 +74,7 @@ jobs:
 Adjust maximum sites processed per request (default: 200):
 
 ```php
-add_filter('dss_cron_number_of_sites', function($sites_per_request) {
+add_filter( 'dss_cron_number_of_sites', function( $sites_per_request ) {
 	return 200;
 });
 ```
@@ -82,7 +82,7 @@ add_filter('dss_cron_number_of_sites', function($sites_per_request) {
 Adjust transient expiration time (default: 1 hour):
 
 ```php
-add_filter('dss_cron_transient_expiration', function($expiration) {
+add_filter( 'dss_cron_transient_expiration', function( $expiration ) {
 	return HOUR_IN_SECONDS;
 });
 ```
