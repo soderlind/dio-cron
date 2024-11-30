@@ -34,7 +34,7 @@ Adding ?ga to the URL (e.g., `https://example.com/dss-cron?ga`) will output resu
 
   <img src="assets/ga-output.png" alt="GitHub Action - Success notice" style="with: 60%">
 
-## Trigger Options
+## ⏰ Trigger Options
 
 1. System Crontab (every 5 minutes):
 
