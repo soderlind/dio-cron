@@ -42,7 +42,7 @@ Adding ?ga to the URL (e.g., `https://example.com/dss-cron?ga`) will output resu
 */5 * * * * curl -s https://example.com/dss-cron
 ```
 
-2. GitHub Actions (every 5 minutes, btw 5 minutes is the shortest interval in GitHub Actions):
+2. GitHub Actions (every 5 minutes, btw 5 minutes is the [shortest interval in GitHub Actions](https://docs.github.com/en/actions/writing-workflows/choosing-when-your-workflow-runs/events-that-trigger-workflows#schedule)):
 
 ```yaml
 name: DSS Cron Job
