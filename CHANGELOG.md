@@ -1,5 +1,13 @@
 ## ⚙️ Changelog
 
+### 2.0.0
+
+- Rename plugin to `DIO Cron`
+- NOTE: this is a breaking change. 
+  - The plugin will be deactivated after the update. You need to reactivate the plugin.
+  - New endpoint: `/dio-cron`
+  - Filters have been changed to `dio_cron_*`
+
 ### 1.0.12
 
 - Refactor error message handling

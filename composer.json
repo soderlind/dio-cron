@@ -1,9 +1,9 @@
 {
-	"name": "soderlind/dss-cron",
+	"name": "soderlind/dio-cron",
 	"description": "Run wp-cron on all public sites in a multisite network",
 	"type": "wordpress-plugin",
 	"license": "GPL-2.0-or-later",
-	"homepage": "https://github.com/soderlind/dss-cron",
+	"homepage": "https://github.com/soderlind/dio-cron",
 	"authors": [
 		{
 			"name": "Per Søderlind",
@@ -19,7 +19,7 @@
 		"github actions"
 	],
 	"support": {
-		"issues": "https://github.com/soderlind/dss-cron/issues"
+		"issues": "https://github.com/soderlind/dio-cron/issues"
 	},
 	"require": {}
 }

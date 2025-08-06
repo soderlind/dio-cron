@@ -1,14 +1,14 @@
 <?php
 /**
- * DSS Cron
+ * DIO Cron
  *
- * @package     DSS_Cron
+ * @package     DIO_Cron
  * @author      Per Soderlind
  * @copyright   2024 Per Soderlind
  * @license     GPL-2.0+
  * 
- * Plugin Name: DSS Cron
- * Plugin URI: https://github.com/soderlind/dss-cron
+ * Plugin Name: DIO Cron
+ * Plugin URI: https://github.com/soderlind/dio-cron
  * Description: Run wp-cron on all public sites in a multisite network.
  * Version: 1.0.12
  * Author: Per Soderlind
@@ -21,14 +21,14 @@
 namespace Soderlind\Multisite\Cron;
 
 // Flush rewrite rules on plugin activation and deactivation.
-register_activation_hook( __FILE__, __NAMESPACE__ . '\dss_cron_activation' );
-register_deactivation_hook( __FILE__, __NAMESPACE__ . '\dss_cron_deactivation' );
+register_activation_hook( __FILE__, __NAMESPACE__ . '\dio_cron_activation' );
+register_deactivation_hook( __FILE__, __NAMESPACE__ . '\dio_cron_deactivation' );
 
 
 // Hook into a custom endpoint to run the cron job.
-add_action( 'init', __NAMESPACE__ . '\dss_cron_init' );
+add_action( 'init', __NAMESPACE__ . '\dio_cron_init' );
 // Run the cron job when the custom endpoint is hit.
-add_action( 'template_redirect', __NAMESPACE__ . '\dss_cron_template_redirect' );
+add_action( 'template_redirect', __NAMESPACE__ . '\dio_cron_template_redirect' );
 
 
 /**
@@ -36,10 +36,10 @@ add_action( 'template_redirect', __NAMESPACE__ . '\dss_cron_template_redirect' )
  * 
  * @return void
  */
-function dss_cron_init(): void {
-	add_rewrite_rule( '^dss-cron/?$', 'index.php?dss_cron=1', 'top' );
-	add_rewrite_rule( '^dss-cron/?\?ga', 'index.php?dss_cron=1&ga=1', 'top' );
-	add_rewrite_tag( '%dss_cron%', '1' );
+function dio_cron_init(): void {
+	add_rewrite_rule( '^dio-cron/?$', 'index.php?dio_cron=1', 'top' );
+	add_rewrite_rule( '^dio-cron/?\?ga', 'index.php?dio_cron=1&ga=1', 'top' );
+	add_rewrite_tag( '%dio_cron%', '1' );
 	add_rewrite_tag( '%ga%', '1' );
 }
 
@@ -48,14 +48,14 @@ function dss_cron_init(): void {
  * 
  * @return void
  */
-function dss_cron_template_redirect(): void {
-	if ( get_query_var( 'dss_cron' ) == 1 ) {
-		$result = dss_run_cron_on_all_sites();
+function dio_cron_template_redirect(): void {
+	if ( get_query_var( 'dio_cron' ) == 1 ) {
+		$result = dio_run_cron_on_all_sites();
 		if ( isset( $_GET[ 'ga' ] ) ) {
 			if ( ! $result[ 'success' ] ) {
 				echo "::error::{$result[ 'message' ]}\n";
 			} else {
-				echo "::notice::Running wp-cron on {$result[ 'count' ]} sites\n";
+				echo "::notice::Running wp-cron on {$result[ 'count' ]} sites in {$result[ 'execution_time' ]} seconds\n";
 			}
 		}
 		exit;
@@ -67,25 +67,30 @@ function dss_cron_template_redirect(): void {
  * 
  * @return array
  */
-function dss_run_cron_on_all_sites(): array {
+function dio_run_cron_on_all_sites(): array {
 	if ( ! is_multisite() ) {
-		return create_error_response( __( 'This plugin requires WordPress Multisite', 'dss-cron' ) );
+		return create_error_response( __( 'This plugin requires WordPress Multisite', 'dio-cron' ) );
 	}
-
-	$sites = get_site_transient( 'dss_cron_sites' );
+	$start_time = microtime( true );
+	$sites      = get_site_transient( 'dio_cron_sites' );
 	if ( false === $sites ) {
+		// remove transient from previous version
+		if ( false !== get_site_transient( 'dss_cron_sites' ) ) {
+			delete_site_transient( 'dss_cron_sites' );
+		}
+		// get all public sites in the network
 		$sites = get_sites( [ 
 			'public'   => 1,
 			'archived' => 0,
 			'deleted'  => 0,
 			'spam'     => 0,
-			'number'   => apply_filters( 'dss_cron_number_of_sites', 200 ),
+			'number'   => apply_filters( 'dio_cron_number_of_sites', 200 ),
 		] );
-		set_site_transient( 'dss_cron_sites', $sites, apply_filters( 'dss_cron_sites_transient', HOUR_IN_SECONDS ) );
+		set_site_transient( 'dio_cron_sites', $sites, apply_filters( 'dio_cron_sites_transient', HOUR_IN_SECONDS ) );
 	}
 
 	if ( empty( $sites ) ) {
-		return create_error_response( __( 'No public sites found in the network', 'dss-cron' ) );
+		return create_error_response( __( 'No public sites found in the network', 'dio-cron' ) );
 	}
 
 	$errors = [];
@@ -98,7 +103,7 @@ function dss_run_cron_on_all_sites(): array {
 		] );
 
 		if ( is_wp_error( $response ) ) {
-			$errors[] = sprintf( __( 'Error for %s: %s', 'dss-cron' ), $url, $response->get_error_message() );
+			$errors[] = sprintf( __( 'Error for %s: %s', 'dio-cron' ), $url, $response->get_error_message() );
 		}
 	}
 
@@ -106,10 +111,14 @@ function dss_run_cron_on_all_sites(): array {
 		return create_error_response( implode( "\n", $errors ) );
 	}
 
+	$end_time       = microtime( true );
+	$execution_time = $end_time - $start_time;
+	$execution_time = number_format( $execution_time, 2 );
 	return [ 
-		'success' => true,
-		'message' => '',
-		'count'   => count( (array) $sites ),
+		'success'        => true,
+		'message'        => '',
+		'count'          => count( (array) $sites ),
+		'execution_time' => $execution_time,
 	];
 }
 
@@ -136,8 +145,8 @@ function create_error_response( $error_message ): array {
  * 
  * @return void
  */
-function dss_cron_activation(): void {
-	dss_cron_init();
+function dio_cron_activation(): void {
+	dio_cron_init();
 	flush_rewrite_rules();
 }
 
@@ -146,7 +155,7 @@ function dss_cron_activation(): void {
  * 
  * @return void
  */
-function dss_cron_deactivation(): void {
+function dio_cron_deactivation(): void {
+	delete_site_transient( 'dio_cron_sites' );
 	flush_rewrite_rules();
 }
-

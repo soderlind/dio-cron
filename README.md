@@ -1,4 +1,4 @@
-# DSS Cron
+# DIO Cron
 
 Run wp-cron on all public sites in a multisite network
 
@@ -6,7 +6,7 @@ Run wp-cron on all public sites in a multisite network
 
 ## 🚀 Quick Start
 
-1. Upload `dss-cron` to `/wp-content/plugins/`
+1. Upload `dio-cron` to `/wp-content/plugins/`
 2. Network activate via 'Network->Plugins'
 3. Disable WordPress default cron in `wp-config.php`:
    ```php
@@ -16,16 +16,16 @@ Run wp-cron on all public sites in a multisite network
 Also available via Composer:
 
 ```bash
-composer require soderlind/dss-cron
+composer require soderlind/dio-cron
 ```
 
 ## 🔧 Configuration
 
-The plugin creates an endpoint at /dss-cron that triggers cron jobs across your network.
+The plugin creates an endpoint at /dio-cron that triggers cron jobs across your network.
 
-Usage: `https://example.com/dss-cron`
+Usage: `https://example.com/dio-cron`
 
-Adding ?ga to the URL (e.g., `https://example.com/dss-cron?ga`) will output results in GitHub Actions compatible format:
+Adding ?ga to the URL (e.g., `https://example.com/dio-cron?ga`) will output results in GitHub Actions compatible format:
 
 - Success: `::notice::Running wp-cron on X sites`
 - Error: `::error::Error message`
@@ -36,22 +36,29 @@ Adding ?ga to the URL (e.g., `https://example.com/dss-cron?ga`) will output resu
 
 ## ⏰ Trigger Options
 
-1. System Crontab (every 5 minutes):
+1. I run this from [Pingdom Uptime](https://www.pingdom.com/product/uptime-monitoring/) every 1 minute. Extra benefit: I get a notification if the site is down.
+   > There are many other services that can ping an URL. You can use any of them to trigger the cron job. 
+
+   Example URL to ping: `https://example.com/dio-cron`
+
+
+
+2. System Crontab (every 5 minutes):
 
 ```bash
-*/5 * * * * curl -s https://example.com/dss-cron
+*/5 * * * * curl -s https://example.com/dio-cron
 ```
 
-2. GitHub Actions (every 5 minutes. 5 minutes is the [shortest interval in GitHub Actions](https://docs.github.com/en/actions/writing-workflows/choosing-when-your-workflow-runs/events-that-trigger-workflows#schedule)):
+3. GitHub Actions (every 5 minutes. 5 minutes is the [shortest interval in GitHub Actions](https://docs.github.com/en/actions/writing-workflows/choosing-when-your-workflow-runs/events-that-trigger-workflows#schedule)):
 
 ```yaml
-name: DSS Cron Job
+name: DIO Cron Job
 on:
   schedule:
     - cron: '*/5 * * * *'
 
 env:
-  CRON_ENDPOINT: 'https://example/dss-cron/?ga'
+  CRON_ENDPOINT: 'https://example/dio-cron/?ga'
 
 jobs:
   trigger_cron:
@@ -74,7 +81,7 @@ jobs:
 Adjust maximum sites processed per request (default: 200):
 
 ```php
-add_filter( 'dss_cron_number_of_sites', function( $sites_per_request ) {
+add_filter( 'dio_cron_number_of_sites', function( $sites_per_request ) {
 	return 200;
 });
 ```
@@ -82,17 +89,17 @@ add_filter( 'dss_cron_number_of_sites', function( $sites_per_request ) {
 Adjust transient expiration time (default: 1 hour):
 
 ```php
-add_filter( 'dss_cron_transient_expiration', function( $expiration ) {
+add_filter( 'dio_cron_transient_expiration', function( $expiration ) {
 	return HOUR_IN_SECONDS;
 });
 ```
 
 ## Copyright and License
 
-DSS Cron is copyright 2024 Per Soderlind
+DIO Cron is copyright 2024 Per Soderlind
 
-DSS Cron is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 2 of the License, or (at your option) any later version.
+DIO Cron is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 2 of the License, or (at your option) any later version.
 
-DSS Cron is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+DIO Cron is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
 
 You should have received a copy of the GNU Lesser General Public License along with the Extension. If not, see http://www.gnu.org/licenses/.

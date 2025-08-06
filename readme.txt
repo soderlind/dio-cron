@@ -1,9 +1,9 @@
-=== DSS Cron ===
+=== DIO Cron ===
 Contributors: PerS
 Tags: cron, multisite, wp-cron
-Requires at least: 5.0
+Requires at least: 6.3
 Tested up to: 6.7
-Stable tag: 1.0.12
+Stable tag: 2.0.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -11,14 +11,14 @@ Run wp-cron on all public sites in a multisite network.
 
 == Description ==
 
-DSS Cron is a WordPress plugin designed to run wp-cron on all public sites in a multisite network. This ensures that scheduled tasks are executed across all sites in the network.
+DIO Cron is a WordPress plugin designed to run wp-cron on all public sites in a multisite network. This ensures that scheduled tasks are executed across all sites in the network.
 
 > "You could have done this with a simple cron job. Why use this plugin?" I have a cluster of WordPress sites. I did run a shell script calling wp cli, but the race condition was a problem. I needed a way to run wp-cron on all sites without overlapping. This plugin was created to solve that problem. 
 
 
 == Installation ==
 
-1. Upload the `dss-cron` folder to the `/wp-content/plugins/` directory.
+1. Upload the `dio-cron` folder to the `/wp-content/plugins/` directory.
 2. Network activate the plugin through the 'Network->Plugins' menu in WordPress.
 3. Disable WordPress default cron in `wp-config.php`:
    ```php
@@ -27,11 +27,11 @@ DSS Cron is a WordPress plugin designed to run wp-cron on all public sites in a 
 
 = Configuration =
 
-The plugin creates an endpoint at /dss-cron that triggers cron jobs across your network.
+The plugin creates an endpoint at /dio-cron that triggers cron jobs across your network.
 
-Usage: `https://example.com/dss-cron`
+Usage: `https://example.com/dio-cron`
 
-Adding ?ga to the URL (e.g., `https://example.com/dss-cron?ga`) will output results in GitHub Actions compatible format:
+Adding ?ga to the URL (e.g., `https://example.com/dio-cron?ga`) will output results in GitHub Actions compatible format:
 - Success: `::notice::Running wp-cron on X sites`
 - Error: `::error::Error message`
 
@@ -39,22 +39,28 @@ Adding ?ga to the URL (e.g., `https://example.com/dss-cron?ga`) will output resu
 
 = Trigger Options =
 
-1. System Crontab (every 5 minutes):
+1. I run this from [Pingdom Uptime](https://www.pingdom.com/product/uptime-monitoring/) every 1 minute. Extra benefit: I get a notification if the site is down.
+   > There are many other services that can ping an URL. You can use any of them to trigger the cron job. 
+
+   Example URL to ping: `https://example.com/dio-cron`
+
+
+2. System Crontab (every 5 minutes):
 
 `
-*/5 * * * * curl -s https://example.com/dss-cron
+*/5 * * * * curl -s https://example.com/dio-cron
 `
 
-2. GitHub Actions (every 5 minutes):
+3. GitHub Actions (every 5 minutes):
 
 `
-name: DSS Cron Job
+name: DIO Cron Job
 on:
   schedule:
     - cron: '*/5 * * * *'
 
 env:
-  CRON_ENDPOINT: 'https://example/dss-cron/?ga'
+  CRON_ENDPOINT: 'https://example/dio-cron/?ga'
 
 jobs:
   trigger_cron:
@@ -77,7 +83,7 @@ jobs:
 Adjust maximum sites processed per request (default: 200):
 
 `
-add_filter('dss_cron_number_of_sites', function($sites_per_request) {
+add_filter('dio_cron_number_of_sites', function($sites_per_request) {
 	return 200;
 });
 `
@@ -85,12 +91,20 @@ add_filter('dss_cron_number_of_sites', function($sites_per_request) {
 Adjust sites cache duration (default: 1 hour):
 
 `
-add_filter('dss_cron_sites_transient', function($duration) {
+add_filter('dio_cron_sites_transient', function($duration) {
 	return HOUR_IN_SECONDS * 2; // 2 hours
 });
 `
 
 == Changelog ==
+
+
+= 2.0.0 =
+* Rename plugin to `DIO Cron`, 
+* NOTE: this is a breaking change. 
+  * The plugin will be deactivated after the update. You need to reactivate the plugin.
+  * New endpoint: `/dio-cron`
+  * Filters have been changed to `dio_cron_*` 
 
 = 1.0.12 =
 * Refactor error message handling
@@ -108,7 +122,7 @@ add_filter('dss_cron_sites_transient', function($duration) {
 * Update documentation
 
 = 1.0.7 =
-* Set the number of sites to 200. You can use the `add_filter( 'dss_cron_number_of_sites', function() { return 100; } );` to change the number of sites per request.
+* Set the number of sites to 200. You can use the `add_filter( 'dio_cron_number_of_sites', function() { return 100; } );` to change the number of sites per request.
 
 = 1.0.6 =
 * Make plugin faster by using `$site->__get( 'siteurl' )` instead of `get_site_url( $site->blog_id )`. This prevents use of `switch_to_blog()` and `restore_current_blog()` functions. They are expensive and slow down the plugin.
@@ -140,7 +154,7 @@ add_filter('dss_cron_sites_transient', function($duration) {
 
 = How does the plugin work? =
 
-The plugin hooks into a custom endpoint to run the cron job. It adds a rewrite rule and tag for the endpoint `dss-cron`. When this endpoint is accessed, the plugin will run wp-cron on all public sites in the multisite network.
+The plugin hooks into a custom endpoint to run the cron job. It adds a rewrite rule and tag for the endpoint `dio-cron`. When this endpoint is accessed, the plugin will run wp-cron on all public sites in the multisite network.
 
 == Screenshots ==
 
