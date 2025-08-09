@@ -21,7 +21,7 @@ class DIO_Cron {
 	 *
 	 * @var string
 	 */
-	const VERSION = '2.2.2';
+	const VERSION = '2.2.3';
 
 	/**
 	 * Instance of the queue manager
