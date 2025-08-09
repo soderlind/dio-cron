@@ -1,106 +1,251 @@
 === DIO Cron ===
 Contributors: PerS
-Tags: cron, multisite, wp-cron
-Requires at least: 6.3
-Tested up to: 6.7
-Stable tag: 2.0.0
+Tags: cron, multisite, wp-cron, action-scheduler, admin-interface, security
+Requires at least: 6.5
+Tested up to: 6.8
+Stable tag: 2.2.1
+Requires PHP: 8.2
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
-Run wp-cron on all public sites in a multisite network.
+Run wp-cron on all public sites in a multisite network with Action Scheduler integration, security token authentication, and comprehensive network admin interface.
 
 == Description ==
 
-DIO Cron is a WordPress plugin designed to run wp-cron on all public sites in a multisite network. This ensures that scheduled tasks are executed across all sites in the network.
+DIO Cron triggers WordPress cron jobs across all public sites in your multisite network. Instead of each site running its own cron independently, this plugin coordinates everything from one place using Action Scheduler for better reliability and performance.
 
-> "You could have done this with a simple cron job. Why use this plugin?" I have a cluster of WordPress sites. I did run a shell script calling wp cli, but the race condition was a problem. I needed a way to run wp-cron on all sites without overlapping. This plugin was created to solve that problem. 
+> "Why not just use a simple cron job?" I run a cluster of WordPress sites and tried using shell scripts with WP-CLI, but ran into race condition problems. I needed a way to run cron jobs on all sites without them overlapping. This plugin solves that problem.
+
+= Key Benefits =
+
+* No race conditions or overlapping cron jobs
+* Better performance with queue-based processing
+* Built-in retry logic for failed sites
+* Easy monitoring and management
+* Comprehensive security with token authentication
+* Rate limiting and execution locking
+* WordPress time constants for better maintainability
+
+= Features =
+
+* **Network Admin Interface**: Complete admin panel at Network Admin → DIO Cron
+* **Action Scheduler Integration**: Queue-based background processing for better reliability  
+* **Security Token System**: Comprehensive authentication with admin interface management
+* **Recurring Jobs**: Automated scheduling with configurable frequencies (5 minutes to 24 hours)
+* **Enhanced Monitoring**: Real-time queue status and processing statistics
+* **Site Diagnostics**: Test individual sites for connectivity issues
+* **WordPress Standards**: Uses WordPress time constants and proper admin patterns
+* **Production Security**: WP_DEBUG-aware logging system with automatic protection 
 
 
 == Installation ==
 
 1. Upload the `dio-cron` folder to the `/wp-content/plugins/` directory.
 2. Network activate the plugin through the 'Network->Plugins' menu in WordPress.
-3. Disable WordPress default cron in `wp-config.php`:
+3. Go to **Network Admin → DIO Cron** to manage everything
+4. **Generate a security token** in the Security Status panel
+5. Disable WordPress default cron in `wp-config.php`:
    ```php
    define('DISABLE_WP_CRON', true);
    ```
 
+= Alternative Installation Methods =
+
+**Install via Composer:**
+```bash
+composer require soderlind/dio-cron
+```
+
+**Updates:**
+Automatic updates directly from GitHub:
+
+1. The plugin will automatically check for updates from the GitHub repository
+2. Updates appear in your WordPress admin under Plugins → Updates
+
+
+= Requirements =
+
+* WordPress Multisite installation
+* Super Admin access (`manage_network_options` capability)
+* Action Scheduler 3.8+ (automatically installed via Composer)
+
+= Security Setup =
+
+**Generate Token:**
+1. Go to **Network Admin → DIO Cron**
+2. In the Security Status panel, click **"Generate Token"**
+3. Copy the generated token
+4. Add `?token=your-token-here` to all your cron URLs
+
+**Token Management:**
+* **Generate New Token** - Creates a secure random token
+* **Set Custom Token** - Use your own token (minimum 16 characters)
+* **Delete Token** - Removes token and disables endpoint
+
+**Alternative Token Configuration:**
+You can also set tokens via environment variables or WordPress constants:
+```bash
+# Environment Variable
+export DIO_CRON_TOKEN="your-secure-token-here"
+```
+```php
+// WordPress Constant (wp-config.php)
+define('DIO_CRON_TOKEN', 'your-secure-token-here');
+```
+
 = Configuration =
 
-The plugin creates an endpoint at /dio-cron that triggers cron jobs across your network.
+The plugin creates multiple endpoints for different use cases. **All endpoints require a security token:**
 
-Usage: `https://example.com/dio-cron`
+* `/dio-cron?token=TOKEN` - Action Scheduler queue processing (recommended)
+* `/dio-cron?immediate=1&token=TOKEN` - Legacy synchronous processing  
+* `/dio-cron?ga&token=TOKEN` - GitHub Actions compatible output format
 
-Adding ?ga to the URL (e.g., `https://example.com/dio-cron?ga`) will output results in GitHub Actions compatible format:
-- Success: `::notice::Running wp-cron on X sites`
-- Error: `::error::Error message`
+= Admin Interface =
+
+Access the comprehensive admin interface at **Network Admin → DIO Cron** for:
+
+* **Generate and manage security tokens** for endpoint protection
+* **Queue Status**: View pending, in-progress, and failed actions
+* **Processing Statistics**: Success rates and daily completion counts
+* **Quick Actions**: Manual queue management and one-click site processing  
+* **Recurring Jobs**: Schedule automated processing with flexible frequencies (5 minutes to 24 hours)
+* **Site Diagnostics**: Test individual sites for connectivity issues
+* **Security Status**: Token protection, rate limiting, and execution lock monitoring
+
+= Security Features =
+
+* **Token Authentication** - All endpoints require secure tokens
+* **Rate Limiting** - Maximum 5 requests per 5 minutes per IP
+* **Execution Locking** - Prevents concurrent cron runs
+* **Security Logging** - All access attempts are logged
+* **IP Tracking** - Monitor requests by IP address
 
 
 
 = Trigger Options =
 
-1. I run this from [Pingdom Uptime](https://www.pingdom.com/product/uptime-monitoring/) every 1 minute. Extra benefit: I get a notification if the site is down.
-   > There are many other services that can ping an URL. You can use any of them to trigger the cron job. 
+Set up one of these to run cron jobs automatically. **Note: All endpoints require a security token.**
 
-   Example URL to ping: `https://example.com/dio-cron`
+1. **External Monitoring (Recommended)**
+   Services like Pingdom can ping your site every few minutes:
+   
+   Example URL to ping: `https://example.com/dio-cron?token=your-token-here`
+   
+   Extra benefit: You get notifications if the site is down.
 
+2. **Server Cron Job**
+   Add this to your server's crontab (every 5 minutes):
+   
+   ```
+   */5 * * * * curl -s "https://example.com/dio-cron?token=your-token-here"
+   ```
 
-2. System Crontab (every 5 minutes):
-
-`
-*/5 * * * * curl -s https://example.com/dio-cron
-`
-
-3. GitHub Actions (every 5 minutes):
-
-`
-name: DIO Cron Job
-on:
-  schedule:
-    - cron: '*/5 * * * *'
-
-env:
-  CRON_ENDPOINT: 'https://example/dio-cron/?ga'
-
-jobs:
-  trigger_cron:
-    runs-on: ubuntu-latest
-    timeout-minutes: 5
-    steps:
-      - run: |
-          curl -X GET ${{ env.CRON_ENDPOINT }} \
-            --connect-timeout 10 \
-            --max-time 30 \
-            --retry 3 \
-            --retry-delay 5 \
-            --silent \
-            --show-error \
-            --fail
-`
+3. **GitHub Actions**
+   Create a workflow file (every 5 minutes):
+   
+   ```yaml
+   name: DIO Cron
+   on:
+     schedule:
+       - cron: '*/5 * * * *'
+   env:
+     DIO_CRON_TOKEN: ${{ secrets.DIO_CRON_TOKEN }}
+   jobs:
+     trigger:
+       runs-on: ubuntu-latest
+       steps:
+         - run: curl -s "https://example.com/dio-cron?ga&token=${{ env.DIO_CRON_TOKEN }}"
+   ```
 
 = Customization =
 
-Adjust maximum sites processed per request (default: 200):
-
-`
-add_filter('dio_cron_number_of_sites', function($sites_per_request) {
-	return 200;
+Adjust how many sites to process at once:
+```php
+add_filter('dio_cron_number_of_sites', function($count) {
+    return 100; // Default is 200
 });
-`
+```
 
-Adjust sites cache duration (default: 1 hour):
+Change request timeout:
+```php
+add_filter('dio_cron_request_timeout', function($seconds) {
+    return 10; // Default is 15 seconds
+});
+```
 
-`
+Adjust cache duration (using WordPress time constants):
+```php
 add_filter('dio_cron_sites_transient', function($duration) {
-	return HOUR_IN_SECONDS * 2; // 2 hours
+    return 2 * HOUR_IN_SECONDS; // Cache for 2 hours instead of 1
 });
-`
+```
+
+Configure rate limiting (using WordPress time constants):
+```php
+add_filter('dio_cron_rate_limit_max_requests', function($max) {
+    return 10; // Allow 10 requests instead of 5
+});
+
+add_filter('dio_cron_rate_limit_time_window', function($seconds) {
+    return 10 * MINUTE_IN_SECONDS; // 10 minute window instead of 5
+});
+```
+
+Customize Action Scheduler batch size:
+```php
+add_filter('dio_cron_batch_size', function($size) {
+    return 50; // Process 50 sites per batch instead of 25
+});
+```
+
+= WordPress Time Constants =
+
+DIO Cron uses WordPress time constants for better code readability and maintainability:
+* `MINUTE_IN_SECONDS` (60 seconds)
+* `HOUR_IN_SECONDS` (3600 seconds) 
+* `DAY_IN_SECONDS` (86400 seconds)
+* `WEEK_IN_SECONDS` (604800 seconds)
+* `MONTH_IN_SECONDS` (2592000 seconds)
+* `YEAR_IN_SECONDS` (31536000 seconds)
+
+These constants make timing configurations more readable and prevent calculation errors.
 
 == Changelog ==
 
+= 2.2.1 =
+* **Enhanced Production Security**: WP_DEBUG-aware logging system with automatic production protection
+* **Smart Admin Interface**: Logging controls automatically hidden when debugging is disabled (`WP_DEBUG = false`)
+* **Conditional Logging**: Detailed logging only functions when `WP_DEBUG` is enabled for security
+* **Security Validation**: Backend validation prevents logging activation without debug mode
+* **Token Authentication**: Comprehensive security token system with admin interface management
+* **Rate Limiting**: Built-in protection against abuse (5 requests per 5 minutes per IP)
+* **WordPress Time Constants**: Code uses `MINUTE_IN_SECONDS`, `HOUR_IN_SECONDS` for better maintainability
+* **Updated Documentation**: Contextual help explains WP_DEBUG requirement and security features
+* **Production Safety**: Zero logging overhead and clean admin interface in production environments
+* **UI Improvements**: Better alignment and visual consistency in admin interface
+
+= 2.1.1 =
+* **Code Quality Improvements**: Complete WordPress Coding Standards compliance (98% PHPCS compliance)
+* **Enhanced Permalink System**: Robust rewrite rules management with automatic cache clearing
+* **Critical Bug Fixes**: Fixed fatal error from function name typo and improved error handling  
+* **Production Ready**: Removed debug functionality for cleaner production interface
+* **Improved Reliability**: Better query variable handling and WordPress rewrite system compatibility
+
+= 2.1.0 =
+* **Network Admin Interface**: Complete admin panel at Network Admin → DIO Cron
+* **Action Scheduler Integration**: Queue-based background processing for improved reliability
+* **Action Scheduler Submenu**: Direct access to Scheduled Actions from DIO Cron admin menu
+* **Recurring Jobs**: Automated scheduling with configurable frequencies (5 minutes to 24 hours)
+* **Enhanced Monitoring**: Real-time queue status, processing statistics, and comprehensive logging
+* **WordPress Standards**: Proper admin hooks, nonce verification, and WordPress `selected()` function integration
+* **Object-Oriented Architecture**: Refactored to class-based design for better maintainability
+* **Security Enhancements**: Capability checks, input sanitization, and secure form handling
+* **Multisite Optimizations**: Prevents Action Scheduler menu duplication in subsites
+* **Backward Compatibility**: All existing endpoints and functionality preserved
 
 = 2.0.0 =
-* Rename plugin to `DIO Cron`, 
+* Rename plugin to `DIO Cron`
 * NOTE: this is a breaking change. 
   * The plugin will be deactivated after the update. You need to reactivate the plugin.
   * New endpoint: `/dio-cron`
@@ -154,7 +299,56 @@ add_filter('dio_cron_sites_transient', function($duration) {
 
 = How does the plugin work? =
 
-The plugin hooks into a custom endpoint to run the cron job. It adds a rewrite rule and tag for the endpoint `dio-cron`. When this endpoint is accessed, the plugin will run wp-cron on all public sites in the multisite network.
+The plugin hooks into a custom endpoint to run the cron job. It adds a rewrite rule and tag for the endpoint `dio-cron`. When this endpoint is accessed with a valid security token, the plugin will run wp-cron on all public sites in the multisite network using Action Scheduler for queue-based processing.
+
+= Getting 401 Unauthorized? =
+
+Check that you've included `?token=your-token-here` in your URL. Verify the token is correct in **Network Admin → DIO Cron → Security Status** and generate a new token if needed.
+
+= Getting 429 Too Many Requests? =
+
+You're hitting the rate limit (5 requests per 5 minutes). Wait a few minutes and try again, or check if multiple systems are calling the endpoint.
+
+= The /dio-cron endpoint returns 404, what should I do? =
+
+If the endpoint is not working:
+1. Go to **Network Admin → DIO Cron** and click "Fix Permalinks"
+2. Alternatively, visit **Settings → Permalinks** and click "Save Changes" 
+3. Ensure your `.htaccess` file is writable and contains WordPress rewrite rules
+
+The "Fix Permalinks" button performs a complete rewrite rules regeneration for maximum effectiveness.
+
+= Getting 409 Conflict? =
+
+Another cron job is already running. Wait up to 5 minutes for it to complete or check **Tools → Scheduled Actions** for stuck jobs.
+
+= How do I monitor the plugin's performance? =
+
+Use the Network Admin interface at **Network Admin → DIO Cron** to view:
+- Real-time queue status (pending, in-progress, failed actions)
+- Processing statistics and success rates
+- Recurring job schedules and next execution times
+
+You can also monitor detailed action history at **Tools → Scheduled Actions** (filter by group: `dio-cron`).
+
+= How do I enable detailed debugging? =
+
+DIO Cron includes detailed logging for debugging wp-cron triggers, but this feature is only available when `WP_DEBUG` is enabled for security.
+
+**Enable Debug Logging:**
+1. Add to your `wp-config.php`:
+   ```php
+   define('WP_DEBUG', true);
+   define('WP_DEBUG_LOG', true);
+   ```
+2. Go to **Network Admin → DIO Cron**
+3. Use the "Enable Detailed Logging" button in Quick Actions
+4. Check `/wp-content/debug.log` for detailed request logs
+
+**Security Note:**
+- Logging controls are automatically hidden in production (`WP_DEBUG = false`)
+- No debugging information is logged without explicit debug mode activation
+- Protects against accidental logging in live environments
 
 == Screenshots ==
 

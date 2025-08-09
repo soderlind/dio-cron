@@ -1,0 +1,585 @@
+/**
+ * DIO Cron Admin Styles
+ * Provides improved styling for the DIO Cron admin interface
+ */
+
+/* Main layout improvements */
+.dio-cron-admin-page {
+	margin: 20px 0;
+}
+
+.dio-cron-admin-page .wrap {
+	max-width: 1200px;
+}
+
+/* Layout containers */
+.dio-cron-main-content {
+	width: 65%;
+	float: left;
+}
+
+.dio-cron-sidebar {
+	width: 30%;
+	float: right;
+	margin-left: 2%;
+}
+
+/* Clear floats */
+.dio-cron-admin-page::after {
+	content: "";
+	display: table;
+	clear: both;
+}
+
+/* Postbox improvements */
+.dio-cron-admin-page .postbox {
+	margin-bottom: 20px;
+	border: 1px solid #c3c4c7;
+	box-shadow: 0 1px 1px rgba(0, 0, 0, 0.04);
+}
+
+.dio-cron-admin-page .postbox .hndle {
+	font-size: 14px;
+	padding: 12px;
+	margin: 0;
+	border-bottom: 1px solid #c3c4c7;
+	background: #f6f7f7;
+}
+
+.dio-cron-admin-page .postbox .inside {
+	padding: 12px;
+}
+
+/* Table styling improvements */
+.dio-cron-admin-page .widefat {
+	border-collapse: collapse;
+	width: 100%;
+	clear: both;
+	margin: 0;
+}
+
+.dio-cron-admin-page .widefat td,
+.dio-cron-admin-page .widefat th {
+	padding: 8px 10px;
+	line-height: 1.3em;
+	vertical-align: middle;
+}
+
+.dio-cron-admin-page .widefat th {
+	font-weight: 600;
+}
+
+.dio-cron-admin-page .widefat tbody tr:nth-child(odd) {
+	background-color: #f9f9f9;
+}
+
+.dio-cron-admin-page .widefat tbody tr:hover {
+	background-color: #f0f0f1;
+}
+
+/* Action buttons styling */
+.dio-cron-actions {
+	margin: 0;
+}
+
+.dio-cron-actions .button {
+	margin-right: 10px;
+	margin-bottom: 10px;
+}
+
+.dio-cron-actions form {
+	display: inline-block;
+	margin: 0 10px 10px 0;
+}
+
+/* Status indicators */
+.dio-cron-status-public {
+	color: #00a32a;
+	font-weight: 600;
+}
+
+.dio-cron-status-private {
+	color: #d63638;
+	font-weight: 600;
+}
+
+.dio-cron-status-indicator {
+	display: inline-flex;
+	align-items: center;
+	gap: 4px;
+}
+
+/* Statistics display */
+.dio-cron-stats-table td:first-child {
+	font-weight: 600;
+	width: 60%;
+}
+
+.dio-cron-stats-table td:last-child {
+	text-align: right;
+	font-family: Monaco, Consolas, "Andale Mono", "DejaVu Sans Mono", monospace;
+}
+
+/* Debug information styling */
+.dio-cron-debug-info {
+	margin-top: 15px;
+	border: 1px solid #c3c4c7;
+	border-radius: 4px;
+}
+
+.dio-cron-debug-info summary {
+	padding: 8px 12px;
+	background: #f6f7f7;
+	cursor: pointer;
+	font-size: 12px;
+	border-radius: 4px 4px 0 0;
+}
+
+.dio-cron-debug-info summary:hover {
+	background: #f0f0f1;
+}
+
+.dio-cron-debug-info .debug-content {
+	padding: 10px;
+	background: #fff;
+	border-top: 1px solid #c3c4c7;
+}
+
+.dio-cron-debug-info pre {
+	font-size: 11px;
+	background: #f8f9fa;
+	padding: 10px;
+	border-radius: 3px;
+	overflow: auto;
+	max-height: 300px;
+	margin: 0;
+	font-family: Monaco, Consolas, "Andale Mono", "DejaVu Sans Mono", monospace;
+}
+
+/* Form styling improvements */
+.dio-cron-form-row {
+	margin-bottom: 15px;
+}
+
+.dio-cron-form-row input[type="number"],
+.dio-cron-form-row select {
+	width: auto;
+	min-width: 120px;
+}
+
+/* Site diagnostics styling */
+.dio-cron-sites-list {
+	max-height: 300px;
+	overflow-y: auto;
+	border: 1px solid #c3c4c7;
+	border-radius: 4px;
+}
+
+.dio-cron-sites-list .widefat {
+	border: none;
+	margin: 0;
+}
+
+.dio-cron-sites-list .widefat th {
+	position: sticky;
+	top: 0;
+	background: #f6f7f7;
+	border-bottom: 1px solid #c3c4c7;
+}
+
+/* Endpoint URLs styling */
+.dio-cron-endpoint {
+	display: block;
+	font-family: Monaco, Consolas, "Andale Mono", "DejaVu Sans Mono", monospace;
+	font-size: 12px;
+	background: #f8f9fa;
+	padding: 6px 8px;
+	border-radius: 3px;
+	margin: 5px 0;
+	word-break: break-all;
+}
+
+/* Clickable endpoint links */
+.dio-cron-endpoint-link {
+	display: inline-block;
+	font-family: Monaco, Consolas, "Andale Mono", "DejaVu Sans Mono", monospace;
+	font-size: 12px;
+	background: #f0f6fc;
+	color: #0073aa;
+	padding: 8px 12px;
+	border-radius: 4px;
+	border: 1px solid #0073aa;
+	margin: 5px 0;
+	text-decoration: none;
+	word-break: break-all;
+	transition: all 0.2s ease;
+}
+
+.dio-cron-endpoint-link:hover {
+	background: #0073aa;
+	color: #ffffff;
+	text-decoration: none;
+	transform: translateY(-1px);
+	box-shadow: 0 2px 4px rgba(0, 115, 170, 0.2);
+}
+
+.dio-cron-endpoint-link:focus {
+	outline: 2px solid #005a87;
+	outline-offset: 2px;
+	color: #0073aa;
+}
+
+/* Disabled endpoint styling */
+.dio-cron-disabled-endpoint {
+	display: inline-block;
+	font-family: Monaco, Consolas, "Andale Mono", "DejaVu Sans Mono", monospace;
+	font-size: 12px;
+	background: #f6f7f7;
+	color: #646970;
+	padding: 8px 12px;
+	border-radius: 4px;
+	border: 1px solid #c3c4c7;
+	margin: 5px 0;
+	word-break: break-all;
+	opacity: 0.7;
+	cursor: not-allowed;
+}
+
+/* Notice improvements */
+.dio-cron-admin-page .notice.inline {
+	margin: 0 0 15px 0;
+	padding: 8px 12px;
+}
+
+.dio-cron-admin-page .notice.inline p {
+	margin: 5px 0;
+}
+
+/* Recurring job status */
+.dio-cron-recurring-active {
+	border-left: 4px solid #00a32a;
+}
+
+.dio-cron-recurring-inactive {
+	border-left: 4px solid #dba617;
+}
+
+/* Responsive design */
+@media screen and (max-width: 1024px) {
+
+	.dio-cron-main-content,
+	.dio-cron-sidebar {
+		width: 100%;
+		float: none;
+		margin-left: 0;
+	}
+
+	.dio-cron-sidebar {
+		margin-top: 20px;
+	}
+}
+
+@media screen and (max-width: 768px) {
+	.dio-cron-actions form {
+		display: block;
+		margin: 0 0 10px 0;
+	}
+
+	.dio-cron-actions .button {
+		width: 100%;
+		margin-right: 0;
+		text-align: center;
+	}
+
+	.dio-cron-sites-list {
+		max-height: 200px;
+	}
+
+	.dio-cron-endpoint {
+		font-size: 10px;
+		padding: 4px 6px;
+	}
+}
+
+/* Loading states */
+.dio-cron-loading {
+	opacity: 0.6;
+	pointer-events: none;
+}
+
+.dio-cron-loading::after {
+	content: "";
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	width: 20px;
+	height: 20px;
+	margin: -10px 0 0 -10px;
+	border: 2px solid #f3f3f3;
+	border-top: 2px solid #0073aa;
+	border-radius: 50%;
+	animation: dio-cron-spin 1s linear infinite;
+}
+
+@keyframes dio-cron-spin {
+	0% {
+		transform: rotate(0deg);
+	}
+
+	100% {
+		transform: rotate(360deg);
+	}
+}
+
+/* Error state styling */
+.dio-cron-error {
+	color: #d63638;
+	font-weight: 600;
+}
+
+.dio-cron-success {
+	color: #00a32a;
+	font-weight: 600;
+}
+
+/* WP Cron warning notice styling */
+.dio-cron-admin-page .notice-warning {
+	border-left-color: #dba617;
+	background: #fff8e5;
+	padding: 15px;
+	margin: 15px 0 20px 0;
+	border-radius: 4px;
+	box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.dio-cron-admin-page .notice-warning h3 {
+	margin: 0 0 10px 0;
+	color: #b7640d;
+	font-size: 16px;
+}
+
+.dio-cron-admin-page .notice-warning p {
+	margin: 8px 0;
+	line-height: 1.5;
+}
+
+.dio-cron-admin-page .notice-warning ul {
+	margin: 8px 0 8px 20px;
+	padding: 0;
+	list-style-type: disc;
+}
+
+.dio-cron-admin-page .notice-warning ul li {
+	margin: 4px 0;
+	line-height: 1.4;
+}
+
+.dio-cron-admin-page .notice-warning code {
+	display: inline-block;
+	background: #f1f1f1;
+	padding: 6px 10px;
+	font-family: 'Courier New', Monaco, Consolas, "Andale Mono", "DejaVu Sans Mono", monospace;
+	font-size: 13px;
+	border-radius: 3px;
+	border: 1px solid #ddd;
+	margin: 5px 0;
+}
+
+.dio-cron-admin-page .notice-warning a {
+	color: #0073aa;
+	text-decoration: none;
+}
+
+.dio-cron-admin-page .notice-warning a:hover {
+	color: #005a87;
+	text-decoration: underline;
+}
+
+/* Utility classes */
+.dio-cron-text-center {
+	text-align: center;
+}
+
+.dio-cron-text-right {
+	text-align: right;
+}
+
+.dio-cron-mt-10 {
+	margin-top: 10px;
+}
+
+.dio-cron-mb-10 {
+	margin-bottom: 10px;
+}
+
+.dio-cron-hidden {
+	display: none;
+}
+
+/* Security status styles */
+.dio-cron-security-status {
+	margin: 0;
+}
+
+.dio-cron-status-success {
+	color: #00a32a;
+	font-weight: 500;
+}
+
+.dio-cron-status-warning {
+	color: #dba617;
+	font-weight: 500;
+}
+
+.dio-cron-status-error {
+	color: #d63638;
+	font-weight: 500;
+}
+
+.dio-cron-security-notice {
+	margin-top: 15px;
+	padding: 10px;
+	background: #fff3cd;
+	border: 1px solid #ffeaa7;
+	border-radius: 4px;
+}
+
+.dio-cron-security-notice p {
+	margin: 0 0 8px 0;
+}
+
+.dio-cron-security-notice p:last-child {
+	margin-bottom: 0;
+}
+
+.dio-cron-security-notice code {
+	display: inline-block;
+	background: #f8f9fa;
+	border: 1px solid #e1e5e9;
+	padding: 2px 6px;
+	border-radius: 3px;
+	font-family: 'Courier New', Courier, monospace;
+	font-size: 12px;
+	margin: 2px 0;
+}
+
+/* Token Management Styles */
+.dio-cron-token-management {
+	margin-top: 15px;
+	padding: 15px;
+	background: #f9f9f9;
+	border: 1px solid #e1e5e9;
+	border-radius: 4px;
+}
+
+.dio-cron-token-management h4 {
+	margin: 0 0 10px 0;
+	padding: 0;
+	font-size: 14px;
+	font-weight: 600;
+}
+
+.dio-cron-token-management h5 {
+	margin: 15px 0 8px 0;
+	padding: 0;
+	font-size: 13px;
+	font-weight: 600;
+}
+
+.dio-cron-token-display {
+	margin-bottom: 15px;
+}
+
+.dio-cron-token-display p {
+	margin: 0 0 5px 0;
+}
+
+.dio-cron-token-field {
+	width: 100%;
+	max-width: 400px;
+	padding: 8px;
+	font-family: 'Courier New', Courier, monospace;
+	font-size: 12px;
+	background: #fff;
+	border: 1px solid #ddd;
+	border-radius: 3px;
+	cursor: pointer;
+}
+
+.dio-cron-token-field:focus {
+	outline: none;
+	border-color: #007cba;
+	box-shadow: 0 0 0 1px #007cba;
+}
+
+.dio-cron-token-actions {
+	margin: 15px 0;
+}
+
+.dio-cron-no-token {
+	padding: 15px;
+	background: #fef7f0;
+	border: 1px solid #f0b849;
+	border-radius: 4px;
+	margin-bottom: 15px;
+}
+
+.dio-cron-no-token p {
+	margin: 0 0 10px 0;
+}
+
+.dio-cron-custom-token {
+	border-top: 1px solid #e1e5e9;
+	padding-top: 15px;
+	margin-top: 15px;
+}
+
+.dio-cron-token-input {
+	width: 250px;
+	padding: 6px 8px;
+	margin-right: 8px;
+	font-family: 'Courier New', Courier, monospace;
+	font-size: 12px;
+}
+
+.dio-cron-form-row {
+	display: flex;
+	align-items: flex-end;
+	gap: 8px;
+	margin-bottom: 5px;
+}
+
+.dio-cron-field-group {
+	display: flex;
+	flex-direction: column;
+	flex: 1;
+}
+
+.dio-cron-field-group label {
+	display: block;
+	margin-bottom: 5px;
+	font-weight: 600;
+}
+
+.dio-cron-field-group select,
+.dio-cron-field-group input[type="text"],
+.dio-cron-field-group input[type="number"] {
+	width: 100%;
+	min-width: 200px;
+}
+
+@media screen and (max-width: 768px) {
+	.dio-cron-token-field {
+		max-width: 100%;
+	}
+
+	.dio-cron-token-input {
+		width: 200px;
+	}
+
+	.dio-cron-form-row {
+		flex-direction: column;
+		align-items: flex-start;
+		gap: 5px;
+	}
+}

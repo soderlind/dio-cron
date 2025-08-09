@@ -1,6 +1,6 @@
 {
 	"name": "soderlind/dio-cron",
-	"description": "Run wp-cron on all public sites in a multisite network",
+	"description": "Run wp-cron on all public sites in a multisite network with Action Scheduler integration and network admin interface",
 	"type": "wordpress-plugin",
 	"license": "GPL-2.0-or-later",
 	"homepage": "https://github.com/soderlind/dio-cron",
@@ -16,10 +16,20 @@
 		"wp",
 		"multisite",
 		"cron",
+		"action-scheduler",
+		"admin-interface",
 		"github actions"
 	],
 	"support": {
 		"issues": "https://github.com/soderlind/dio-cron/issues"
 	},
-	"require": {}
+	"require": {
+		"woocommerce/action-scheduler": "^3.8",
+		"yahnis-elsts/plugin-update-checker": "^5.0"
+	},
+	"config": {
+		"allow-plugins": {
+			"composer/installers": true
+		}
+	}
 }
