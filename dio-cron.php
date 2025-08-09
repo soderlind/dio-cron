@@ -103,15 +103,15 @@ if ( ! function_exists( __NAMESPACE__ . '\dio_run_cron_on_all_sites' ) ) {
 		$result         = $site_processor->process_sites_batch( $sites );
 
 		// Convert the result format to match legacy expectations.
-		if ( $result[ 'success' ] ) {
-			return [ 
+		if ( $result['success'] ) {
+			return [
 				'success'        => true,
 				'message'        => '',
-				'count'          => $result[ 'processed' ],
-				'execution_time' => $result[ 'execution_time' ],
+				'count'          => $result['processed'],
+				'execution_time' => $result['execution_time'],
 			];
 		} else {
-			return create_error_response( $result[ 'message' ] );
+			return create_error_response( $result['message'] );
 		}
 	}
 }
