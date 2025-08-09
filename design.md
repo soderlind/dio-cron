@@ -93,7 +93,8 @@ dio-cron/
 │   ├── class-queue-manager.php (Action Scheduler integration)
 │   ├── class-site-processor.php (individual site processing)
 │   └── class-admin.php (admin interface - optional)
-├── assets/ (existing)
+├── assets/ (images and media)
+├── css/ (stylesheets)
 └── vendor/ (Action Scheduler)
 ```
 

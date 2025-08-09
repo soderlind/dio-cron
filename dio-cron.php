@@ -10,7 +10,7 @@
  * Plugin Name: DIO Cron
  * Plugin URI: https://github.com/soderlind/dio-cron
  * Description: Run wp-cron on all public sites in a multisite network with Action Scheduler integration and network admin interface.
- * Version: 2.2.1
+ * Version: 2.2.2
  * Author: Per Soderlind
  * Author URI: https://soderlind.no
  * License: GPL-2.0+
@@ -41,19 +41,22 @@ if ( file_exists( __DIR__ . '/vendor/woocommerce/action-scheduler/action-schedul
 if ( file_exists( __DIR__ . '/vendor/yahnis-elsts/plugin-update-checker/plugin-update-checker.php' ) ) {
 	require_once __DIR__ . '/vendor/yahnis-elsts/plugin-update-checker/plugin-update-checker.php';
 
-	// Initialize GitHub updater
-	add_action( 'init', function () {
-		if ( class_exists( 'YahnisElsts\PluginUpdateChecker\v5\PucFactory' ) ) {
-			$myUpdateChecker = \YahnisElsts\PluginUpdateChecker\v5\PucFactory::buildUpdateChecker(
-				'https://github.com/soderlind/dio-cron',
-				__FILE__,
-				'dio-cron'
-			);
+	// Initialize GitHub updater.
+	add_action(
+		'init',
+		function () {
+			if ( class_exists( 'YahnisElsts\PluginUpdateChecker\v5\PucFactory' ) ) {
+				$update_checker = \YahnisElsts\PluginUpdateChecker\v5\PucFactory::buildUpdateChecker(
+					'https://github.com/soderlind/dio-cron',
+					__FILE__,
+					'dio-cron'
+				);
 
-			// Set the branch to check for updates (optional)
-			$myUpdateChecker->setBranch( 'main' );
+				// Set the branch to check for updates (optional).
+				$update_checker->setBranch( 'main' );
+			}
 		}
-	} );
+	);
 }
 
 // Load the main plugin class.
@@ -94,12 +97,12 @@ if ( ! function_exists( __NAMESPACE__ . '\dio_run_cron_on_all_sites' ) ) {
 			return create_error_response( __( 'No public sites found in the network', 'dio-cron' ) );
 		}
 
-		// Use the site processor for consistent cron processing logic
+		// Use the site processor for consistent cron processing logic.
 		$instance       = DIO_Cron::get_instance();
 		$site_processor = $instance->get_site_processor();
 		$result         = $site_processor->process_sites_batch( $sites );
 
-		// Convert the result format to match legacy expectations
+		// Convert the result format to match legacy expectations.
 		if ( $result[ 'success' ] ) {
 			return [ 
 				'success'        => true,
@@ -122,10 +125,10 @@ if ( ! function_exists( __NAMESPACE__ . '\create_error_response' ) ) {
 	 * @return array
 	 */
 	function create_error_response( $error_message ): array {
-		// Use utilities class for consistent error response format
+		// Use utilities class for consistent error response format.
 		$response = DIO_Cron_Utilities::create_error_response( $error_message );
 
-		// Wrap in array for legacy compatibility
+		// Wrap in array for legacy compatibility.
 		return [ $response ];
 	}
 }
@@ -140,7 +143,7 @@ if ( ! function_exists( __NAMESPACE__ . '\dio_cron_init' ) ) {
 	 */
 	function dio_cron_init(): void {
 		// Rewrite rules are now handled by DIO_Cron class in init_rewrite_rules()
-		// This function is kept for backward compatibility but delegates to the main class
+		// This function is kept for backward compatibility but delegates to the main class.
 		$instance = DIO_Cron::get_instance();
 		$instance->init_rewrite_rules();
 	}

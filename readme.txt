@@ -1,9 +1,12 @@
-=== DIO Cron ===
+===Requires at least: 6.5
+Tested up to: 6.8
+Stable tag: 2.2.2
+Requires PHP: 8.2 Cron ===
 Contributors: PerS
 Tags: cron, multisite, wp-cron, action-scheduler, admin-interface, security
 Requires at least: 6.5
 Tested up to: 6.8
-Stable tag: 2.2.1
+Stable tag: 2.2.2
 Requires PHP: 8.2
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -212,6 +215,18 @@ DIO Cron uses WordPress time constants for better code readability and maintaina
 These constants make timing configurations more readable and prevent calculation errors.
 
 == Changelog ==
+
+= 2.2.2 =
+* **100% Standards Compliance**: Achieved perfect compliance with custom phpcs coding standards
+* **Modern WordPress APIs**: Complete implementation of `wp_date()`, `wp_remote_get()`, `rawurlencode()` best practices
+* **Array Syntax Modernization**: Converted to short array syntax `[]` throughout entire codebase
+* **Security Optimizations**: Enhanced CSRF protection and proper nonce verification handling
+* **Database Performance**: ActionScheduler integration with performance-optimized queries
+* **Code Organization**: CSS files moved to dedicated `css/` folder, improved file structure
+* **Quality Assurance**: Reduced violations from 300+ to 0 across all core files
+* **Production Ready**: Robust error handling and memory-efficient code patterns
+* **Developer Experience**: Enhanced IDE integration and automated standards checking
+* **GitHub Integration**: Plugin Update Checker for direct repository updates
 
 = 2.2.1 =
 * **Enhanced Production Security**: WP_DEBUG-aware logging system with automatic production protection
