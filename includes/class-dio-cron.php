@@ -21,7 +21,7 @@ class DIO_Cron {
 	 *
 	 * @var string
 	 */
-	const VERSION = '2.2.2';
+	const VERSION = '2.2.3';
 
 	/**
 	 * Instance of the queue manager
@@ -199,9 +199,9 @@ class DIO_Cron {
 			try {
 				// Parse request parameters to determine processing mode.
 				// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- API endpoint parameters, not form processing
-				$immediate = isset( $_GET[ 'immediate' ] ) && '1' === $_GET[ 'immediate' ];
+				$immediate = isset( $_GET['immediate'] ) && '1' === $_GET['immediate'];
 				// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- API endpoint parameters, not form processing
-				$ga_output = isset( $_GET[ 'ga' ] );
+				$ga_output = isset( $_GET['ga'] );
 
 				if ( $immediate ) {
 					// Legacy immediate processing - synchronous execution for backward compatibility.
@@ -214,7 +214,7 @@ class DIO_Cron {
 				// Log successful execution.
 				DIO_Cron_Utilities::log_security_event(
 					'SUCCESSFUL_EXECUTION',
-					sprintf( 'Cron executed successfully for %d sites', $result[ 'count' ] ?? 0 )
+					sprintf( 'Cron executed successfully for %d sites', $result['count'] ?? 0 )
 				);
 
 				// Output results.
@@ -279,7 +279,7 @@ class DIO_Cron {
 	 */
 	private function output_error_response( string $message ): void {
 		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- API endpoint parameters, not form processing
-		$ga_output = isset( $_GET[ 'ga' ] );
+		$ga_output = isset( $_GET['ga'] );
 
 		if ( $ga_output ) {
 			// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- GitHub Actions command format.
@@ -307,12 +307,12 @@ class DIO_Cron {
 	 * @return void
 	 */
 	private function output_github_actions_format( array $result ): void {
-		if ( ! $result[ 'success' ] ) {
+		if ( ! $result['success'] ) {
 			// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- GitHub Actions command format.
 			echo "::error::{$result[ 'message' ]}\n";
 		} else {
-			$count          = $result[ 'count' ] ?? 0;
-			$execution_time = $result[ 'execution_time' ] ?? 'N/A';
+			$count          = $result['count'] ?? 0;
+			$execution_time = $result['execution_time'] ?? 'N/A';
 			// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- GitHub Actions command format.
 			echo "::notice::Queued wp-cron for {$count} sites (execution time: {$execution_time}s)\n";
 		}

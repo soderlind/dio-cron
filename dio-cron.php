@@ -10,7 +10,7 @@
  * Plugin Name: DIO Cron
  * Plugin URI: https://github.com/soderlind/dio-cron
  * Description: Run wp-cron on all public sites in a multisite network with Action Scheduler integration and network admin interface.
- * Version: 2.2.2
+ * Version: 2.2.3
  * Author: Per Soderlind
  * Author URI: https://soderlind.no
  * License: GPL-2.0+
@@ -103,15 +103,15 @@ if ( ! function_exists( __NAMESPACE__ . '\dio_run_cron_on_all_sites' ) ) {
 		$result         = $site_processor->process_sites_batch( $sites );
 
 		// Convert the result format to match legacy expectations.
-		if ( $result[ 'success' ] ) {
-			return [ 
+		if ( $result['success'] ) {
+			return [
 				'success'        => true,
 				'message'        => '',
-				'count'          => $result[ 'processed' ],
-				'execution_time' => $result[ 'execution_time' ],
+				'count'          => $result['processed'],
+				'execution_time' => $result['execution_time'],
 			];
 		} else {
-			return create_error_response( $result[ 'message' ] );
+			return create_error_response( $result['message'] );
 		}
 	}
 }
