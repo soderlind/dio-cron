@@ -4,6 +4,9 @@ Run cron jobs on all sites in a WordPress multisite network. Uses **Action Sched
 
 > "Why not just use a simple cron job?" I run a cluster of WordPress sites and tried using shell scripts with WP-CLI, but ran into race condition problems. I needed a way to run cron jobs on all sites without them overlapping. This plugin solves that problem.
 
+
+<img src="assets/dio-cron-admin.png" alt="DIO Cron Screenshot">
+
 ## What It Does
 
 DIO Cron triggers WordPress cron jobs across all public sites in your multisite network. Instead of each site running its own cron independently, this plugin coordinates everything from one place.
