@@ -37,27 +37,19 @@ if ( file_exists( __DIR__ . '/vendor/woocommerce/action-scheduler/action-schedul
 	require_once __DIR__ . '/vendor/woocommerce/action-scheduler/action-scheduler.php';
 }
 
-// Initialize GitHub updater if available.
-if ( file_exists( __DIR__ . '/vendor/yahnis-elsts/plugin-update-checker/plugin-update-checker.php' ) ) {
-	require_once __DIR__ . '/vendor/yahnis-elsts/plugin-update-checker/plugin-update-checker.php';
-
-	// Initialize GitHub updater.
-	add_action(
-		'init',
-		function () {
-			if ( class_exists( 'YahnisElsts\PluginUpdateChecker\v5\PucFactory' ) ) {
-				$update_checker = \YahnisElsts\PluginUpdateChecker\v5\PucFactory::buildUpdateChecker(
-					'https://github.com/soderlind/dio-cron',
-					__FILE__,
-					'dio-cron'
-				);
-
-				// Set the branch to check for updates (optional).
-				$update_checker->setBranch( 'main' );
-			}
-		}
-	);
+// Include the generic updater class
+if ( ! class_exists( 'Soderlind\WordPress\GitHub_Plugin_Updater' ) ) {
+	require_once plugin_dir_path( __FILE__ ) . 'includes/class-github-plugin-updater.php';
 }
+// Initialize the updater with configuration.
+$dio_cron_updater = \Soderlind\WordPress\GitHub_Plugin_Updater::create_with_assets(
+	'https://github.com/soderlind/dio-cron',
+	__FILE__,
+	'dio-cron',
+	'/dio-cron\.zip/',
+	'main'
+);
+
 
 // Load the main plugin class.
 require_once plugin_dir_path( __FILE__ ) . 'includes/class-dio-cron.php';
@@ -103,15 +95,15 @@ if ( ! function_exists( __NAMESPACE__ . '\dio_run_cron_on_all_sites' ) ) {
 		$result         = $site_processor->process_sites_batch( $sites );
 
 		// Convert the result format to match legacy expectations.
-		if ( $result['success'] ) {
-			return [
+		if ( $result[ 'success' ] ) {
+			return [ 
 				'success'        => true,
 				'message'        => '',
-				'count'          => $result['processed'],
-				'execution_time' => $result['execution_time'],
+				'count'          => $result[ 'processed' ],
+				'execution_time' => $result[ 'execution_time' ],
 			];
 		} else {
-			return create_error_response( $result['message'] );
+			return create_error_response( $result[ 'message' ] );
 		}
 	}
 }
