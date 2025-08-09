@@ -68,7 +68,11 @@ class DIO_Cron_Queue_Manager {
 		}
 
 		return DIO_Cron_Utilities::create_success_response(
-			sprintf( esc_html__( 'Queued %d sites for cron processing', 'dio-cron' ), intval( $queued_count ) ),
+			sprintf(
+				/* translators: %d: number of sites queued for cron processing */
+				esc_html__( 'Queued %d sites for cron processing', 'dio-cron' ),
+				intval( $queued_count )
+			),
 			$queued_count,
 			$execution_time
 		);
@@ -85,7 +89,7 @@ class DIO_Cron_Queue_Manager {
 			return DIO_Cron_Utilities::create_action_scheduler_error();
 		}
 
-		$site_data = [ 
+		$site_data = [
 			'site_id'  => $site->blog_id,
 			'site_url' => $site->siteurl,
 		];
@@ -174,7 +178,7 @@ class DIO_Cron_Queue_Manager {
 			DIO_Cron_Utilities::get_action_scheduler_query_args( DIO_Cron_Utilities::PROCESS_SITE_HOOK, 'failed', 10 )
 		);
 
-		return [ 
+		return [
 			'pending'        => count( $pending ),
 			'in_progress'    => count( $in_progress ),
 			'failed'         => count( $failed ),

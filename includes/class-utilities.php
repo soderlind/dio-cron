@@ -31,7 +31,7 @@ class DIO_Cron_Utilities {
 	 * @return array
 	 */
 	public static function get_action_scheduler_error() {
-		return [ 
+		return [
 			'error' => esc_html__( 'Action Scheduler is not available', 'dio-cron' ),
 		];
 	}
@@ -63,7 +63,7 @@ class DIO_Cron_Utilities {
 	 * @return array
 	 */
 	public static function create_error_response( string $message, int $count = 0 ): array {
-		return [ 
+		return [
 			'success' => false,
 			'message' => $message,
 			'count'   => $count,
@@ -79,14 +79,14 @@ class DIO_Cron_Utilities {
 	 * @return array
 	 */
 	public static function create_success_response( string $message, int $count, ?float $execution_time = null ): array {
-		$response = [ 
+		$response = [
 			'success' => true,
 			'message' => $message,
 			'count'   => $count,
 		];
 
 		if ( null !== $execution_time ) {
-			$response[ 'execution_time' ] = $execution_time;
+			$response['execution_time'] = $execution_time;
 		}
 
 		return $response;
@@ -107,7 +107,7 @@ class DIO_Cron_Utilities {
 			return new \WP_Error( 'missing_site_url', esc_html__( 'Site URL is missing', 'dio-cron' ) );
 		}
 
-		$site_status_checks = [ 
+		$site_status_checks = [
 			'public'   => [ 'site_not_public', esc_html__( 'Site is not public', 'dio-cron' ) ],
 			'archived' => [ 'site_archived', esc_html__( 'Site is archived', 'dio-cron' ) ],
 			'deleted'  => [ 'site_deleted', esc_html__( 'Site is deleted', 'dio-cron' ) ],
@@ -116,15 +116,13 @@ class DIO_Cron_Utilities {
 
 		foreach ( $site_status_checks as $property => $error_info ) {
 			if ( 'public' === $property ) {
-				// Public should be 1 (true)
+				// Public should be 1 (true).
 				if ( isset( $site->$property ) && ! $site->$property ) {
-					return new \WP_Error( $error_info[ 0 ], $error_info[ 1 ] );
+					return new \WP_Error( $error_info[0], $error_info[1] );
 				}
-			} else {
-				// Other properties should be 0 (false) or not set
-				if ( isset( $site->$property ) && $site->$property ) {
-					return new \WP_Error( $error_info[ 0 ], $error_info[ 1 ] );
-				}
+			} elseif ( isset( $site->$property ) && $site->$property ) {
+				// Other properties should be 0 (false) or not set.
+				return new \WP_Error( $error_info[0], $error_info[1] );
 			}
 		}
 
@@ -141,8 +139,7 @@ class DIO_Cron_Utilities {
 	 */
 	public static function format_site_error( string $site_url, string $message_template, string $error_message ): string {
 		return sprintf(
-			// translators: %1$s is the site URL, %2$s is the error message.
-			esc_html__( $message_template, 'dio-cron' ),
+			$message_template,
 			esc_url( $site_url ),
 			esc_html( $error_message )
 		);
@@ -169,7 +166,7 @@ class DIO_Cron_Utilities {
 	 * @return array
 	 */
 	public static function get_action_scheduler_query_args( string $hook, string $status, int $per_page = 25 ): array {
-		return [ 
+		return [
 			'hook'     => $hook,
 			'status'   => $status,
 			'group'    => 'dio-cron',
@@ -201,7 +198,7 @@ class DIO_Cron_Utilities {
 	 * @return array
 	 */
 	public static function create_no_sites_provided_error() {
-		return [ 
+		return [
 			'success'   => false,
 			'message'   => esc_html__( 'No sites provided for processing', 'dio-cron' ),
 			'processed' => 0,
@@ -216,7 +213,7 @@ class DIO_Cron_Utilities {
 	 * @return array|false Returns array with action and nonce, or false if invalid.
 	 */
 	public static function validate_admin_action( array $request ) {
-		if ( ! isset( $request[ 'action' ] ) ) {
+		if ( ! isset( $request['action'] ) ) {
 			return false;
 		}
 
@@ -224,14 +221,14 @@ class DIO_Cron_Utilities {
 			return false;
 		}
 
-		$action = sanitize_text_field( wp_unslash( $request[ 'action' ] ?? '' ) );
-		$nonce  = sanitize_text_field( wp_unslash( $request[ '_wpnonce' ] ?? '' ) );
+		$action = sanitize_text_field( wp_unslash( $request['action'] ?? '' ) );
+		$nonce  = sanitize_text_field( wp_unslash( $request['_wpnonce'] ?? '' ) );
 
 		if ( ! wp_verify_nonce( $nonce, 'dio_cron_admin' ) ) {
 			return false;
 		}
 
-		return [ 
+		return [
 			'action' => $action,
 			'nonce'  => $nonce,
 		];
@@ -262,15 +259,15 @@ class DIO_Cron_Utilities {
 	public static function add_admin_notice( string $type, string $message ): void {
 		add_action(
 			'admin_notices',
-			function () use ($type, $message) {
-				echo self::create_admin_notice_html( $type, $message );
+			function () use ( $type, $message ) {
+				echo wp_kses_post( self::create_admin_notice_html( $type, $message ) );
 			}
 		);
 	}
 
 	/**
 	 * Get all public sites in the multisite network with transient caching
-	 * 
+	 *
 	 * Supports both transient and object caching for optimal performance:
 	 * - Uses object cache when available for persistent caching
 	 * - Falls back to transients for standard WordPress installations
@@ -283,28 +280,28 @@ class DIO_Cron_Utilities {
 		$cache_key   = 'dio_cron_sites';
 		$cache_group = 'dio_cron';
 
-		// Try object cache first (redis, memcached, etc.)
+		// Try object cache first (redis, memcached, etc.).
 		if ( wp_using_ext_object_cache() ) {
 			$sites = wp_cache_get( $cache_key, $cache_group );
 			if ( false !== $sites ) {
 				return $sites;
 			}
 		} else {
-			// Fall back to transients for standard WordPress
+			// Fall back to transients for standard WordPress.
 			$sites = get_site_transient( $cache_key );
 			if ( false !== $sites ) {
 				return $sites;
 			}
 		}
 
-		// Remove transient from previous version during cache miss
+		// Remove transient from previous version during cache miss.
 		if ( false !== get_site_transient( 'dss_cron_sites' ) ) {
 			delete_site_transient( 'dss_cron_sites' );
 		}
 
 		// Get all public sites in the network.
 		$sites = get_sites(
-			[ 
+			[
 				'public'   => 1,
 				'archived' => 0,
 				'deleted'  => 0,
@@ -319,7 +316,7 @@ class DIO_Cron_Utilities {
 
 		$cache_duration = apply_filters( 'dio_cron_sites_transient', HOUR_IN_SECONDS );
 
-		// Store in appropriate cache
+		// Store in appropriate cache.
 		if ( wp_using_ext_object_cache() ) {
 			wp_cache_set( $cache_key, $sites, $cache_group, $cache_duration );
 		} else {
@@ -340,12 +337,12 @@ class DIO_Cron_Utilities {
 
 		$success = true;
 
-		// Clear from object cache if available
+		// Clear from object cache if available.
 		if ( wp_using_ext_object_cache() ) {
 			$success &= wp_cache_delete( $cache_key, $cache_group );
 		}
 
-		// Always clear from transients (fallback)
+		// Always clear from transients (fallback).
 		$success &= delete_site_transient( $cache_key );
 
 		return (bool) $success;
@@ -353,7 +350,7 @@ class DIO_Cron_Utilities {
 
 	/**
 	 * Get the secret token for endpoint authentication
-	 * 
+	 *
 	 * Uses hierarchical token retrieval for maximum flexibility:
 	 * 1. Environment variable (DIO_CRON_TOKEN) - for containerized deployments
 	 * 2. WordPress constant (DIO_CRON_TOKEN) - for wp-config.php configuration
@@ -403,8 +400,10 @@ class DIO_Cron_Utilities {
 		if ( function_exists( 'random_bytes' ) ) {
 			try {
 				return bin2hex( random_bytes( $length ) );
-			} catch (\Exception $e) {
+			} catch ( \Exception $e ) {
 				// Fall back to wp_generate_password if random_bytes fails.
+				// Intentionally empty - fallback is handled below.
+				unset( $e ); // Suppress unused variable warning.
 			}
 		}
 
@@ -432,20 +431,20 @@ class DIO_Cron_Utilities {
 
 		foreach ( $ip_keys as $key ) {
 			if ( ! empty( $_SERVER[ $key ] ) ) {
-				$ips = explode( ',', $_SERVER[ $key ] );
-				$ip  = trim( $ips[ 0 ] );
+				$ips = explode( ',', sanitize_text_field( wp_unslash( $_SERVER[ $key ] ) ) );
+				$ip  = trim( $ips[0] );
 				if ( filter_var( $ip, FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE ) ) {
 					return $ip;
 				}
 			}
 		}
 
-		return $_SERVER[ 'REMOTE_ADDR' ] ?? '';
+		return sanitize_text_field( wp_unslash( $_SERVER['REMOTE_ADDR'] ?? '' ) );
 	}
 
 	/**
 	 * Check rate limit for endpoint requests
-	 * 
+	 *
 	 * Implements sliding window rate limiting per IP address:
 	 * - Tracks request timestamps in site transients
 	 * - Automatically cleans expired entries outside time window
@@ -467,9 +466,12 @@ class DIO_Cron_Utilities {
 
 		// Clean old requests outside time window.
 		$current_time = time();
-		$requests     = array_filter( $requests, function ($timestamp) use ($current_time, $time_window) {
-			return ( $current_time - $timestamp ) < $time_window;
-		} );
+		$requests     = array_filter(
+			$requests,
+			function ( $timestamp ) use ( $current_time, $time_window ) {
+				return ( $current_time - $timestamp ) < $time_window;
+			}
+		);
 
 		// Check if limit exceeded.
 		if ( count( $requests ) >= $max_requests ) {
@@ -491,12 +493,13 @@ class DIO_Cron_Utilities {
 	public static function verify_endpoint_token() {
 		$secret = self::get_endpoint_token();
 
-		// Token is now mandatory - must be configured
+		// Token is now mandatory - must be configured.
 		if ( empty( $secret ) ) {
 			return false; // No token configured - access denied.
 		}
 
-		$provided_token = $_GET[ 'token' ] ?? $_POST[ 'token' ] ?? '';
+		// phpcs:ignore WordPress.Security.NonceVerification.Missing,WordPress.Security.NonceVerification.Recommended -- Token-based API endpoint, not form processing
+		$provided_token = sanitize_text_field( wp_unslash( $_GET['token'] ?? $_POST['token'] ?? '' ) );
 
 		if ( empty( $provided_token ) ) {
 			return false; // No token provided - access denied.
@@ -558,28 +561,29 @@ class DIO_Cron_Utilities {
 				wp_json_encode( $context )
 			);
 
+			// phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Debug logging when WP_DEBUG is enabled
 			error_log( $log_entry );
 		}
 	}
 
 	/**
 	 * Common Action Scheduler hook names
-	 * 
+	 *
 	 * These constants provide centralized hook management for Action Scheduler integration.
 	 * Using constants prevents typos and makes it easier to update hook names globally.
 	 */
 
 	/**
 	 * Hook name for processing individual sites
-	 * 
+	 *
 	 * @var string
 	 */
 	const PROCESS_SITE_HOOK = 'dio_cron_process_site';
 
 	/**
 	 * Hook name for triggering all sites processing
-	 * 
-	 * @var string  
+	 *
+	 * @var string
 	 */
 	const RUN_ALL_SITES_HOOK = 'dio_cron_run_all_sites';
 }

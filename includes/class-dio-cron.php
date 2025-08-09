@@ -21,7 +21,7 @@ class DIO_Cron {
 	 *
 	 * @var string
 	 */
-	const VERSION = '2.2.1';
+	const VERSION = '2.2.2';
 
 	/**
 	 * Instance of the queue manager
@@ -167,7 +167,7 @@ class DIO_Cron {
 
 	/**
 	 * Handle the custom endpoint request
-	 * 
+	 *
 	 * This method processes incoming requests to the /dio-cron endpoint.
 	 * It implements a comprehensive security and execution flow:
 	 * 1. Verifies endpoint security (rate limiting + token authentication)
@@ -180,12 +180,12 @@ class DIO_Cron {
 	 */
 	public function handle_template_redirect(): void {
 		if ( get_query_var( 'dio_cron' ) ) {
-			// Security checks - Mandatory authentication and rate limiting
+			// Security checks - Mandatory authentication and rate limiting.
 			if ( ! $this->verify_endpoint_security() ) {
 				return; // Exit handled in verify_endpoint_security().
 			}
 
-			// Prevent concurrent execution - Only one cron job should run at a time
+			// Prevent concurrent execution - Only one cron job should run at a time.
 			if ( ! DIO_Cron_Utilities::acquire_execution_lock() ) {
 				DIO_Cron_Utilities::log_security_event(
 					'CONCURRENT_EXECUTION',
@@ -197,15 +197,17 @@ class DIO_Cron {
 			}
 
 			try {
-				// Parse request parameters to determine processing mode
+				// Parse request parameters to determine processing mode.
+				// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- API endpoint parameters, not form processing
 				$immediate = isset( $_GET[ 'immediate' ] ) && '1' === $_GET[ 'immediate' ];
+				// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- API endpoint parameters, not form processing
 				$ga_output = isset( $_GET[ 'ga' ] );
 
 				if ( $immediate ) {
-					// Legacy immediate processing - synchronous execution for backward compatibility
+					// Legacy immediate processing - synchronous execution for backward compatibility.
 					$result = $this->run_immediate_cron();
 				} else {
-					// New Action Scheduler queue processing - asynchronous, reliable execution
+					// New Action Scheduler queue processing - asynchronous, reliable execution.
 					$result = $this->queue_manager->enqueue_all_sites();
 				}
 
@@ -276,6 +278,7 @@ class DIO_Cron {
 	 * @return void
 	 */
 	private function output_error_response( string $message ): void {
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- API endpoint parameters, not form processing
 		$ga_output = isset( $_GET[ 'ga' ] );
 
 		if ( $ga_output ) {
