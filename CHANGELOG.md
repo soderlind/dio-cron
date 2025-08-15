@@ -1,5 +1,47 @@
 ## ⚙️ Changelog
 
+### 2.2.6 - Network Statistics Data Integration Fix
+
+🔧 **Critical Fix**: Network-wide statistics now update correctly with proper data integration
+
+#### 🛠️ Bug Fixes
+- **📊 Network Stats Update Integration**: Fixed missing `update_network_stats()` call in cron execution flow
+  - **Queue-Based Processing**: Stats now update after successful `enqueue_all_sites()` completion
+  - **Immediate Processing**: Stats now update after successful `run_immediate_cron()` completion
+  - **Safe Count Validation**: Only updates stats when `$sites_count > 0` to avoid empty runs
+  - **Type Safety**: Uses `(int) ( $result['count'] ?? 0 )` for robust count extraction
+
+- **📈 Data Flow Enhancement**: Proper integration of statistics tracking across execution paths
+  - **Unified Counting**: Both execution modes now contribute to network-wide totals
+  - **Execution Timing**: Stats update positioned after success but before output/logging
+  - **Error Handling**: Stats only update on successful executions to maintain accuracy
+  - **Cluster Safety**: Maintains site transient-based storage for multisite environments
+
+#### 🔧 Technical Implementation
+- **🏗️ Code Integration**: Added stats update call in `handle_template_redirect()` method
+  - **Execution Flow**: `$result = execution()` → `update_network_stats($count)` → `log_success()` → `output()`
+  - **Count Extraction**: Extracts site count from both queue manager and legacy function responses
+  - **Conditional Update**: Only increments stats when sites were actually processed
+  - **Method Placement**: Strategically positioned for optimal data accuracy
+
+- **💾 Data Consistency**: Enhanced reliability of network-wide statistics
+  - **Total Runs Counter**: Increments with each successful cron execution
+  - **Sites Processed**: Accumulates actual site counts from each run
+  - **Last Run Timestamp**: Updates with precise execution completion time
+  - **Persistent Storage**: Site transients ensure data survives server restarts
+
+#### 🎯 User Impact
+- **📊 Accurate Statistics**: Network-Wide DIO Cron Stats panel now displays real-time data
+- **🔍 Better Monitoring**: Total Runs, Total Sites Processed, and Last Run reflect actual activity
+- **📈 Reliable Metrics**: Statistics tracking works for both queue-based and immediate processing
+- **⚡ Immediate Updates**: Stats refresh after each successful cron execution
+
+#### 🛡️ Quality Assurance
+- **🔄 Backward Compatibility**: No breaking changes to existing functionality
+- **🧪 PHP Syntax**: Validated syntax correctness with no errors detected
+- **📋 Code Standards**: Maintained existing coding patterns and integration points
+- **⚙️ Execution Safety**: Robust error handling prevents stats corruption
+
 ### 2.2.5 - User Interface Consolidation & Enhanced Monitoring
 
 📊 **UI Enhancement**: Consolidated statistics interface with improved user experience and network-wide monitoring
