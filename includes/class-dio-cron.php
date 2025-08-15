@@ -21,7 +21,7 @@ class DIO_Cron {
 	 *
 	 * @var string VERSION Plugin version
 	 */
-	const VERSION = '2.2.6';    /**
+	const VERSION = '2.2.7';    /**
 			* Instance of the queue manager
 			*
 			* @var DIO_Cron_Queue_Manager
