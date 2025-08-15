@@ -15,6 +15,45 @@ if ( ! defined( 'ABSPATH' ) ) {
  * Shared utilities class for common functionality across DIO Cron classes
  */
 class DIO_Cron_Utilities {
+	/**
+	 * Update network-wide stats for DIO Cron runs.
+	 *
+	 * @param int $sites_processed Number of sites processed in this run.
+	 * @return void
+	 */
+	public static function update_network_stats( int $sites_processed ) {
+		$key   = 'dio_cron_network_stats';
+		$stats = get_site_transient( $key );
+		if ( ! is_array( $stats ) ) {
+			$stats = [ 
+				'total_runs'            => 0,
+				'last_run'              => 0,
+				'total_sites_processed' => 0,
+			];
+		}
+		$stats[ 'total_runs' ]++;
+		$stats[ 'last_run' ]              = time();
+		$stats[ 'total_sites_processed' ] += $sites_processed;
+		set_site_transient( $key, $stats, DAY_IN_SECONDS );
+	}
+
+	/**
+	 * Get network-wide stats for DIO Cron runs.
+	 *
+	 * @return array
+	 */
+	public static function get_network_stats() {
+		$key   = 'dio_cron_network_stats';
+		$stats = get_site_transient( $key );
+		if ( ! is_array( $stats ) ) {
+			$stats = [ 
+				'total_runs'            => 0,
+				'last_run'              => 0,
+				'total_sites_processed' => 0,
+			];
+		}
+		return $stats;
+	}
 
 	/**
 	 * Check if Action Scheduler is available
@@ -31,7 +70,7 @@ class DIO_Cron_Utilities {
 	 * @return array
 	 */
 	public static function get_action_scheduler_error() {
-		return [
+		return [ 
 			'error' => esc_html__( 'Action Scheduler is not available', 'dio-cron' ),
 		];
 	}
@@ -63,7 +102,7 @@ class DIO_Cron_Utilities {
 	 * @return array
 	 */
 	public static function create_error_response( string $message, int $count = 0 ): array {
-		return [
+		return [ 
 			'success' => false,
 			'message' => $message,
 			'count'   => $count,
@@ -79,14 +118,14 @@ class DIO_Cron_Utilities {
 	 * @return array
 	 */
 	public static function create_success_response( string $message, int $count, ?float $execution_time = null ): array {
-		$response = [
+		$response = [ 
 			'success' => true,
 			'message' => $message,
 			'count'   => $count,
 		];
 
 		if ( null !== $execution_time ) {
-			$response['execution_time'] = $execution_time;
+			$response[ 'execution_time' ] = $execution_time;
 		}
 
 		return $response;
@@ -107,7 +146,7 @@ class DIO_Cron_Utilities {
 			return new \WP_Error( 'missing_site_url', esc_html__( 'Site URL is missing', 'dio-cron' ) );
 		}
 
-		$site_status_checks = [
+		$site_status_checks = [ 
 			'public'   => [ 'site_not_public', esc_html__( 'Site is not public', 'dio-cron' ) ],
 			'archived' => [ 'site_archived', esc_html__( 'Site is archived', 'dio-cron' ) ],
 			'deleted'  => [ 'site_deleted', esc_html__( 'Site is deleted', 'dio-cron' ) ],
@@ -118,11 +157,11 @@ class DIO_Cron_Utilities {
 			if ( 'public' === $property ) {
 				// Public should be 1 (true).
 				if ( isset( $site->$property ) && ! $site->$property ) {
-					return new \WP_Error( $error_info[0], $error_info[1] );
+					return new \WP_Error( $error_info[ 0 ], $error_info[ 1 ] );
 				}
 			} elseif ( isset( $site->$property ) && $site->$property ) {
 				// Other properties should be 0 (false) or not set.
-				return new \WP_Error( $error_info[0], $error_info[1] );
+				return new \WP_Error( $error_info[ 0 ], $error_info[ 1 ] );
 			}
 		}
 
@@ -166,7 +205,7 @@ class DIO_Cron_Utilities {
 	 * @return array
 	 */
 	public static function get_action_scheduler_query_args( string $hook, string $status, int $per_page = 25 ): array {
-		return [
+		return [ 
 			'hook'     => $hook,
 			'status'   => $status,
 			'group'    => 'dio-cron',
@@ -198,7 +237,7 @@ class DIO_Cron_Utilities {
 	 * @return array
 	 */
 	public static function create_no_sites_provided_error() {
-		return [
+		return [ 
 			'success'   => false,
 			'message'   => esc_html__( 'No sites provided for processing', 'dio-cron' ),
 			'processed' => 0,
@@ -213,7 +252,7 @@ class DIO_Cron_Utilities {
 	 * @return array|false Returns array with action and nonce, or false if invalid.
 	 */
 	public static function validate_admin_action( array $request ) {
-		if ( ! isset( $request['action'] ) ) {
+		if ( ! isset( $request[ 'action' ] ) ) {
 			return false;
 		}
 
@@ -221,14 +260,14 @@ class DIO_Cron_Utilities {
 			return false;
 		}
 
-		$action = sanitize_text_field( wp_unslash( $request['action'] ?? '' ) );
-		$nonce  = sanitize_text_field( wp_unslash( $request['_wpnonce'] ?? '' ) );
+		$action = sanitize_text_field( wp_unslash( $request[ 'action' ] ?? '' ) );
+		$nonce  = sanitize_text_field( wp_unslash( $request[ '_wpnonce' ] ?? '' ) );
 
 		if ( ! wp_verify_nonce( $nonce, 'dio_cron_admin' ) ) {
 			return false;
 		}
 
-		return [
+		return [ 
 			'action' => $action,
 			'nonce'  => $nonce,
 		];
@@ -259,7 +298,7 @@ class DIO_Cron_Utilities {
 	public static function add_admin_notice( string $type, string $message ): void {
 		add_action(
 			'admin_notices',
-			function () use ( $type, $message ) {
+			function () use ($type, $message) {
 				echo wp_kses_post( self::create_admin_notice_html( $type, $message ) );
 			}
 		);
@@ -301,7 +340,7 @@ class DIO_Cron_Utilities {
 
 		// Get all public sites in the network.
 		$sites = get_sites(
-			[
+			[ 
 				'public'   => 1,
 				'archived' => 0,
 				'deleted'  => 0,
@@ -400,7 +439,7 @@ class DIO_Cron_Utilities {
 		if ( function_exists( 'random_bytes' ) ) {
 			try {
 				return bin2hex( random_bytes( $length ) );
-			} catch ( \Exception $e ) {
+			} catch (\Exception $e) {
 				// Fall back to wp_generate_password if random_bytes fails.
 				// Intentionally empty - fallback is handled below.
 				unset( $e ); // Suppress unused variable warning.
@@ -432,14 +471,14 @@ class DIO_Cron_Utilities {
 		foreach ( $ip_keys as $key ) {
 			if ( ! empty( $_SERVER[ $key ] ) ) {
 				$ips = explode( ',', sanitize_text_field( wp_unslash( $_SERVER[ $key ] ) ) );
-				$ip  = trim( $ips[0] );
+				$ip  = trim( $ips[ 0 ] );
 				if ( filter_var( $ip, FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE ) ) {
 					return $ip;
 				}
 			}
 		}
 
-		return sanitize_text_field( wp_unslash( $_SERVER['REMOTE_ADDR'] ?? '' ) );
+		return sanitize_text_field( wp_unslash( $_SERVER[ 'REMOTE_ADDR' ] ?? '' ) );
 	}
 
 	/**
@@ -468,7 +507,7 @@ class DIO_Cron_Utilities {
 		$current_time = time();
 		$requests     = array_filter(
 			$requests,
-			function ( $timestamp ) use ( $current_time, $time_window ) {
+			function ($timestamp) use ($current_time, $time_window) {
 				return ( $current_time - $timestamp ) < $time_window;
 			}
 		);
@@ -499,7 +538,7 @@ class DIO_Cron_Utilities {
 		}
 
 		// phpcs:ignore WordPress.Security.NonceVerification.Missing,WordPress.Security.NonceVerification.Recommended -- Token-based API endpoint, not form processing
-		$provided_token = sanitize_text_field( wp_unslash( $_GET['token'] ?? $_POST['token'] ?? '' ) );
+		$provided_token = sanitize_text_field( wp_unslash( $_GET[ 'token' ] ?? $_POST[ 'token' ] ?? '' ) );
 
 		if ( empty( $provided_token ) ) {
 			return false; // No token provided - access denied.
@@ -509,24 +548,44 @@ class DIO_Cron_Utilities {
 	}
 
 	/**
-	 * Acquire execution lock to prevent concurrent runs
+	 * Acquire a network-wide execution lock using site transients.
+	 * Prevents concurrent runs across all servers in a multisite/cluster environment.
+	 * Also prevents rapid re-entry (double-run) within a short window.
 	 *
 	 * @param int $timeout Lock timeout in seconds.
-	 * @return bool
+	 * @param int $min_interval Minimum seconds between runs (last-run protection).
+	 * @return bool True if lock acquired, false if already locked or ran too recently.
 	 */
-	public static function acquire_execution_lock( int $timeout = 5 * MINUTE_IN_SECONDS ): bool {
-		$lock_key = 'dio_cron_execution_lock';
-
-		if ( get_site_transient( $lock_key ) ) {
+	public static function acquire_execution_lock( int $timeout = 300, int $min_interval = 60 ): bool {
+		$lock_key     = 'dio_cron_execution_lock';
+		$last_run_key = 'dio_cron_last_run';
+		$now          = time();
+		$last_run     = (int) get_site_transient( $last_run_key );
+		if ( $last_run && ( $now - $last_run ) < $min_interval ) {
+			return false; // Ran too recently.
+		}
+		$lock = get_site_transient( $lock_key );
+		if ( $lock && isset( $lock[ 'expires' ] ) && $lock[ 'expires' ] > $now ) {
 			return false; // Already locked.
 		}
-
-		set_site_transient( $lock_key, time(), $timeout );
-		return true;
+		$lock_data = [ 
+			'server'    => gethostname(),
+			'pid'       => function_exists( 'getmypid' ) ? getmypid() : null,
+			'timestamp' => $now,
+			'expires'   => $now + $timeout,
+		];
+		set_site_transient( $lock_key, $lock_data, $timeout );
+		// Double-check we got the lock (race protection)
+		$verify = get_site_transient( $lock_key );
+		if ( $verify && $verify[ 'timestamp' ] === $now ) {
+			set_site_transient( $last_run_key, $now, $timeout );
+			return true;
+		}
+		return false;
 	}
 
 	/**
-	 * Release execution lock
+	 * Release the network-wide execution lock.
 	 *
 	 * @return bool
 	 */
@@ -535,12 +594,26 @@ class DIO_Cron_Utilities {
 	}
 
 	/**
-	 * Check if execution is currently locked
+	 * Check if execution is currently locked (network-wide).
 	 *
 	 * @return bool
 	 */
 	public static function is_execution_locked() {
-		return false !== get_site_transient( 'dio_cron_execution_lock' );
+		$lock = get_site_transient( 'dio_cron_execution_lock' );
+		return ( $lock && isset( $lock[ 'expires' ] ) && $lock[ 'expires' ] > time() );
+	}
+
+	/**
+	 * Get info about the current lock holder (for debugging/logging).
+	 *
+	 * @return array|null
+	 */
+	public static function get_execution_lock_info() {
+		$lock = get_site_transient( 'dio_cron_execution_lock' );
+		if ( $lock && isset( $lock[ 'expires' ] ) && $lock[ 'expires' ] > time() ) {
+			return $lock;
+		}
+		return null;
 	}
 
 	/**

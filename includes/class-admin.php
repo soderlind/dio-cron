@@ -222,12 +222,12 @@ class DIO_Cron_Admin {
 	 */
 	public function handle_admin_actions() {
 		// Check if we're on the right page.
-		if ( ! isset( $_REQUEST['page'] ) || 'dio-cron-status' !== $_REQUEST['page'] ) {
+		if ( ! isset( $_REQUEST[ 'page' ] ) || 'dio-cron-status' !== $_REQUEST[ 'page' ] ) {
 			return;
 		}
 
 		// Check if this is a POST request with an action.
-		if ( ! isset( $_POST['action'] ) ) {
+		if ( ! isset( $_POST[ 'action' ] ) ) {
 			return;
 		}
 
@@ -235,8 +235,8 @@ class DIO_Cron_Admin {
 			return;
 		}
 
-		$action = sanitize_text_field( wp_unslash( $_POST['action'] ?? '' ) );
-		$nonce  = sanitize_text_field( wp_unslash( $_POST['_wpnonce'] ?? '' ) );
+		$action = sanitize_text_field( wp_unslash( $_POST[ 'action' ] ?? '' ) );
+		$nonce  = sanitize_text_field( wp_unslash( $_POST[ '_wpnonce' ] ?? '' ) );
 
 		if ( ! wp_verify_nonce( $nonce, 'dio_cron_admin' ) ) {
 			wp_die( esc_html__( 'Security check failed.', 'dio-cron' ) );
@@ -250,8 +250,8 @@ class DIO_Cron_Admin {
 			case 'queue_all_sites':
 				$result = $queue_manager->enqueue_all_sites();
 				$this->add_admin_notice(
-					$result['success'] ? 'success' : 'error',
-					$result['message']
+					$result[ 'success' ] ? 'success' : 'error',
+					$result[ 'message' ]
 				);
 				break;
 
@@ -261,8 +261,8 @@ class DIO_Cron_Admin {
 				break;
 
 			case 'schedule_recurring':
-				$frequency = intval( $_POST['frequency'] ?? HOUR_IN_SECONDS ); // Default 1 hour.
-				$result    = $queue_manager->schedule_recurring_job( $frequency );
+				$frequency = intval( $_POST[ 'frequency' ] ?? HOUR_IN_SECONDS ); // Default 1 hour.
+				$result = $queue_manager->schedule_recurring_job( $frequency );
 				if ( is_wp_error( $result ) ) {
 					$this->add_admin_notice( 'error', $result->get_error_message() );
 				} else {
@@ -284,7 +284,7 @@ class DIO_Cron_Admin {
 				break;
 
 			case 'test_individual_site':
-				$site_url = sanitize_url( wp_unslash( $_POST['site_url'] ?? '' ) );
+				$site_url = sanitize_url( wp_unslash( $_POST[ 'site_url' ] ?? '' ) );
 				if ( ! empty( $site_url ) ) {
 					// Find the site that matches this URL from our multisite network.
 					$site  = null;
@@ -322,8 +322,8 @@ class DIO_Cron_Admin {
 									/* translators: 1: site URL, 2: response code, 3: execution time */
 									esc_html__( 'Site %1$s test successful! Response code: %2$d (%3$.2fs)', 'dio-cron' ),
 									esc_url( $site_url ),
-									$result['response_code'] ?? 'N/A',
-									$result['execution_time'] ?? 0
+									$result[ 'response_code' ] ?? 'N/A',
+									$result[ 'execution_time' ] ?? 0
 								)
 							);
 						}
@@ -341,7 +341,7 @@ class DIO_Cron_Admin {
 				if ( DIO_Cron_Utilities::is_action_scheduler_available() ) {
 					// Get pending actions.
 					$pending_actions = as_get_scheduled_actions(
-						[
+						[ 
 							'hook'     => 'dio_cron_process_site',
 							'status'   => 'pending',
 							'per_page' => 5, // Process just a few for testing.
@@ -352,7 +352,7 @@ class DIO_Cron_Admin {
 						$processed = 0;
 						foreach ( $pending_actions as $action ) {
 							// Trigger the action manually.
-							do_action( 'dio_cron_process_site', $action->get_args()[0] ?? '' );
+							do_action( 'dio_cron_process_site', $action->get_args()[ 0 ] ?? '' );
 							++$processed;
 						}
 						/* translators: %d: Number of actions processed */
@@ -375,7 +375,7 @@ class DIO_Cron_Admin {
 				break;
 
 			case 'update_token':
-				$custom_token = sanitize_text_field( wp_unslash( $_POST['custom_token'] ?? '' ) );
+				$custom_token = sanitize_text_field( wp_unslash( $_POST[ 'custom_token' ] ?? '' ) );
 				if ( ! empty( $custom_token ) ) {
 					if ( strlen( $custom_token ) < 16 ) {
 						$this->add_admin_notice( 'error', esc_html__( 'Token must be at least 16 characters long', 'dio-cron' ) );
@@ -405,7 +405,7 @@ class DIO_Cron_Admin {
 				}
 
 				$current_setting = get_option( 'dio_cron_detailed_logging', false );
-				$new_setting     = ! $current_setting;
+				$new_setting = ! $current_setting;
 				update_option( 'dio_cron_detailed_logging', $new_setting );
 
 				if ( $new_setting ) {
@@ -420,7 +420,7 @@ class DIO_Cron_Admin {
 		}
 
 		// Redirect to prevent resubmission.
-		$request_uri  = isset( $_SERVER['REQUEST_URI'] ) ? esc_url_raw( wp_unslash( $_SERVER['REQUEST_URI'] ) ) : '';
+		$request_uri  = isset( $_SERVER[ 'REQUEST_URI' ] ) ? esc_url_raw( wp_unslash( $_SERVER[ 'REQUEST_URI' ] ) ) : '';
 		$redirect_url = remove_query_arg( [ 'action', '_wpnonce' ], $request_uri );
 		$redirect_url = add_query_arg( 'updated', '1', $redirect_url );
 		wp_safe_redirect( $redirect_url );
@@ -467,8 +467,8 @@ class DIO_Cron_Admin {
 					</p>
 					<p>
 						<code style="background: #f1f1f1; padding: 4px 8px; font-family: 'Courier New', monospace;">
-																																																																																																	define( 'DISABLE_WP_CRON', true );
-																																																																																																</code>
+																																																																																																				define( 'DISABLE_WP_CRON', true );
+																																																																																																			</code>
 					</p>
 					<p>
 						<strong><?php esc_html_e( 'Important:', 'dio-cron' ); ?></strong>
@@ -481,22 +481,22 @@ class DIO_Cron_Admin {
 				<div class="postbox">
 					<h2 class="hndle"><?php esc_html_e( 'Queue Status', 'dio-cron' ); ?></h2>
 					<div class="inside">
-						<?php if ( isset( $queue_status['error'] ) ) : ?>
-							<p class="description dio-cron-error"><?php echo esc_html( $queue_status['error'] ); ?></p>
+						<?php if ( isset( $queue_status[ 'error' ] ) ) : ?>
+							<p class="description dio-cron-error"><?php echo esc_html( $queue_status[ 'error' ] ); ?></p>
 						<?php else : ?>
 							<table class="widefat dio-cron-stats-table">
 								<tbody>
 									<tr>
 										<td><strong><?php esc_html_e( 'Pending Actions', 'dio-cron' ); ?></strong></td>
-										<td><?php echo intval( $queue_status['pending'] ); ?></td>
+										<td><?php echo intval( $queue_status[ 'pending' ] ); ?></td>
 									</tr>
 									<tr>
 										<td><strong><?php esc_html_e( 'In Progress', 'dio-cron' ); ?></strong></td>
-										<td><?php echo intval( $queue_status['in_progress'] ); ?></td>
+										<td><?php echo intval( $queue_status[ 'in_progress' ] ); ?></td>
 									</tr>
 									<tr>
 										<td><strong><?php esc_html_e( 'Failed Actions', 'dio-cron' ); ?></strong></td>
-										<td><?php echo intval( $queue_status['failed'] ); ?></td>
+										<td><?php echo intval( $queue_status[ 'failed' ] ); ?></td>
 									</tr>
 								</tbody>
 							</table>
@@ -507,22 +507,22 @@ class DIO_Cron_Admin {
 				<div class="postbox">
 					<h2 class="hndle"><?php esc_html_e( 'Processing Statistics (Today)', 'dio-cron' ); ?></h2>
 					<div class="inside">
-						<?php if ( isset( $processing_stats['error'] ) ) : ?>
-							<p class="description dio-cron-error"><?php echo esc_html( $processing_stats['error'] ); ?></p>
+						<?php if ( isset( $processing_stats[ 'error' ] ) ) : ?>
+							<p class="description dio-cron-error"><?php echo esc_html( $processing_stats[ 'error' ] ); ?></p>
 						<?php else : ?>
 							<table class="widefat dio-cron-stats-table">
 								<tbody>
 									<tr>
 										<td><strong><?php esc_html_e( 'Completed', 'dio-cron' ); ?></strong></td>
-										<td><?php echo intval( $processing_stats['completed_today'] ); ?></td>
+										<td><?php echo intval( $processing_stats[ 'completed_today' ] ); ?></td>
 									</tr>
 									<tr>
 										<td><strong><?php esc_html_e( 'Failed', 'dio-cron' ); ?></strong></td>
-										<td><?php echo intval( $processing_stats['failed_today'] ); ?></td>
+										<td><?php echo intval( $processing_stats[ 'failed_today' ] ); ?></td>
 									</tr>
 									<tr>
 										<td><strong><?php esc_html_e( 'Success Rate', 'dio-cron' ); ?></strong></td>
-										<td><?php echo number_format( $processing_stats['success_rate'], 1 ); ?>%</td>
+										<td><?php echo number_format( $processing_stats[ 'success_rate' ], 1 ); ?>%</td>
 									</tr>
 								</tbody>
 							</table>
@@ -661,8 +661,8 @@ class DIO_Cron_Admin {
 							</a>
 						<?php else : ?>
 							<code class="dio-cron-disabled-endpoint">
-																																																																										<?php echo esc_url( home_url( '/dio-cron?token=YOUR_TOKEN_HERE' ) ); ?>
-																																																																									</code>
+																																																																													<?php echo esc_url( home_url( '/dio-cron?token=YOUR_TOKEN_HERE' ) ); ?>
+																																																																												</code>
 						<?php endif; ?>
 
 						<p><strong><?php esc_html_e( 'Legacy Mode:', 'dio-cron' ); ?></strong></p>
@@ -673,8 +673,8 @@ class DIO_Cron_Admin {
 							</a>
 						<?php else : ?>
 							<code class="dio-cron-disabled-endpoint">
-																																																																										<?php echo esc_url( home_url( '/dio-cron?immediate=1&token=YOUR_TOKEN_HERE' ) ); ?>
-																																																																									</code>
+																																																																													<?php echo esc_url( home_url( '/dio-cron?immediate=1&token=YOUR_TOKEN_HERE' ) ); ?>
+																																																																												</code>
 						<?php endif; ?>
 
 						<p><strong><?php esc_html_e( 'GitHub Actions:', 'dio-cron' ); ?></strong></p>
@@ -685,8 +685,8 @@ class DIO_Cron_Admin {
 							</a>
 						<?php else : ?>
 							<code class="dio-cron-disabled-endpoint">
-																																																																										<?php echo esc_url( home_url( '/dio-cron?ga&token=YOUR_TOKEN_HERE' ) ); ?>
-																																																																									</code>
+																																																																													<?php echo esc_url( home_url( '/dio-cron?ga&token=YOUR_TOKEN_HERE' ) ); ?>
+																																																																												</code>
 						<?php endif; ?>
 					</div>
 				</div>
@@ -704,17 +704,17 @@ class DIO_Cron_Admin {
 						<div class="dio-cron-recurring-status">
 							<?php
 							$recurring_status = $this->get_recurring_job_status();
-							if ( $recurring_status['active'] ) :
+							if ( $recurring_status[ 'active' ] ) :
 								?>
 								<div class="dio-cron-status dio-cron-status-success">
 									<p><strong><?php esc_html_e( 'Recurring job is active', 'dio-cron' ); ?></strong></p>
 									<p><?php esc_html_e( 'Next run:', 'dio-cron' ); ?>
-										<?php echo esc_html( date_i18n( get_option( 'date_format' ) . ' ' . get_option( 'time_format' ), $recurring_status['next_run'] ) ); ?>
+										<?php echo esc_html( date_i18n( get_option( 'date_format' ) . ' ' . get_option( 'time_format' ), $recurring_status[ 'next_run' ] ) ); ?>
 									</p>
-									<?php if ( $recurring_status['frequency'] ) : ?>
+									<?php if ( $recurring_status[ 'frequency' ] ) : ?>
 										<div class="dio-cron-job-details">
 											<p><?php esc_html_e( 'Frequency:', 'dio-cron' ); ?>
-												<?php echo esc_html( $recurring_status['frequency'] ); ?>
+												<?php echo esc_html( $recurring_status[ 'frequency' ] ); ?>
 												<?php esc_html_e( 'seconds', 'dio-cron' ); ?>
 											</p>
 										</div>
@@ -735,25 +735,25 @@ class DIO_Cron_Admin {
 									<label for="frequency"><?php esc_html_e( 'Frequency:', 'dio-cron' ); ?></label>
 									<select name="frequency" id="frequency" required class="dio-cron-select">
 										<option value=""><?php esc_html_e( 'Select frequency...', 'dio-cron' ); ?></option>
-										<option value="<?php echo esc_attr( 5 * MINUTE_IN_SECONDS ); ?>" <?php selected( $recurring_status['frequency'], 5 * MINUTE_IN_SECONDS ); ?>>
+										<option value="<?php echo esc_attr( 5 * MINUTE_IN_SECONDS ); ?>" <?php selected( $recurring_status[ 'frequency' ], 5 * MINUTE_IN_SECONDS ); ?>>
 											<?php esc_html_e( '5 minutes', 'dio-cron' ); ?>
 										</option>
-										<option value="<?php echo esc_attr( 15 * MINUTE_IN_SECONDS ); ?>" <?php selected( $recurring_status['frequency'], 15 * MINUTE_IN_SECONDS ); ?>>
+										<option value="<?php echo esc_attr( 15 * MINUTE_IN_SECONDS ); ?>" <?php selected( $recurring_status[ 'frequency' ], 15 * MINUTE_IN_SECONDS ); ?>>
 											<?php esc_html_e( '15 minutes', 'dio-cron' ); ?>
 										</option>
-										<option value="<?php echo esc_attr( 30 * MINUTE_IN_SECONDS ); ?>" <?php selected( $recurring_status['frequency'], 30 * MINUTE_IN_SECONDS ); ?>>
+										<option value="<?php echo esc_attr( 30 * MINUTE_IN_SECONDS ); ?>" <?php selected( $recurring_status[ 'frequency' ], 30 * MINUTE_IN_SECONDS ); ?>>
 											<?php esc_html_e( '30 minutes', 'dio-cron' ); ?>
 										</option>
-										<option value="<?php echo esc_attr( HOUR_IN_SECONDS ); ?>" <?php selected( $recurring_status['frequency'], HOUR_IN_SECONDS ); ?>>
+										<option value="<?php echo esc_attr( HOUR_IN_SECONDS ); ?>" <?php selected( $recurring_status[ 'frequency' ], HOUR_IN_SECONDS ); ?>>
 											<?php esc_html_e( '1 hour', 'dio-cron' ); ?>
 										</option>
-										<option value="<?php echo esc_attr( 6 * HOUR_IN_SECONDS ); ?>" <?php selected( $recurring_status['frequency'], 6 * HOUR_IN_SECONDS ); ?>>
+										<option value="<?php echo esc_attr( 6 * HOUR_IN_SECONDS ); ?>" <?php selected( $recurring_status[ 'frequency' ], 6 * HOUR_IN_SECONDS ); ?>>
 											<?php esc_html_e( '6 hours', 'dio-cron' ); ?>
 										</option>
-										<option value="<?php echo esc_attr( 12 * HOUR_IN_SECONDS ); ?>" <?php selected( $recurring_status['frequency'], 12 * HOUR_IN_SECONDS ); ?>>
+										<option value="<?php echo esc_attr( 12 * HOUR_IN_SECONDS ); ?>" <?php selected( $recurring_status[ 'frequency' ], 12 * HOUR_IN_SECONDS ); ?>>
 											<?php esc_html_e( '12 hours', 'dio-cron' ); ?>
 										</option>
-										<option value="<?php echo esc_attr( DAY_IN_SECONDS ); ?>" <?php selected( $recurring_status['frequency'], DAY_IN_SECONDS ); ?>>
+										<option value="<?php echo esc_attr( DAY_IN_SECONDS ); ?>" <?php selected( $recurring_status[ 'frequency' ], DAY_IN_SECONDS ); ?>>
 											<?php esc_html_e( '24 hours', 'dio-cron' ); ?>
 										</option>
 									</select>
@@ -771,6 +771,32 @@ class DIO_Cron_Admin {
 									value="<?php esc_html_e( 'Unschedule Recurring', 'dio-cron' ); ?>">
 							</form>
 						</div>
+					</div>
+				</div>
+
+				<div class="postbox">
+					<h2 class="hndle"><?php esc_html_e( 'Network-Wide DIO Cron Stats', 'dio-cron' ); ?></h2>
+					<div class="inside">
+						<?php
+						$network_stats = \Soderlind\Multisite\Cron\DIO_Cron_Utilities::get_network_stats();
+						?>
+						<table class="widefat dio-cron-stats-table">
+							<tbody>
+								<tr>
+									<td><strong><?php esc_html_e( 'Total Runs', 'dio-cron' ); ?></strong></td>
+									<td><?php echo intval( $network_stats[ 'total_runs' ] ); ?></td>
+								</tr>
+								<tr>
+									<td><strong><?php esc_html_e( 'Total Sites Processed', 'dio-cron' ); ?></strong></td>
+									<td><?php echo intval( $network_stats[ 'total_sites_processed' ] ); ?></td>
+								</tr>
+								<tr>
+									<td><strong><?php esc_html_e( 'Last Run', 'dio-cron' ); ?></strong></td>
+									<td><?php echo $network_stats[ 'last_run' ] ? esc_html( date_i18n( get_option( 'date_format' ) . ' ' . get_option( 'time_format' ), $network_stats[ 'last_run' ] ) ) : esc_html__( 'Never', 'dio-cron' ); ?>
+									</td>
+								</tr>
+							</tbody>
+						</table>
 					</div>
 				</div>
 			</div>
@@ -820,7 +846,7 @@ class DIO_Cron_Admin {
 		if ( $next_scheduled ) {
 			// Try to get the frequency from the scheduled action.
 			$actions = as_get_scheduled_actions(
-				[
+				[ 
 					'hook'     => 'dio_cron_run_all_sites',
 					'status'   => 'pending',
 					'per_page' => 1,
@@ -838,14 +864,14 @@ class DIO_Cron_Admin {
 		}
 
 		if ( $next_scheduled ) {
-			return [
+			return [ 
 				'active'    => true,
 				'next_run'  => $next_scheduled,
 				'frequency' => $frequency,
 			];
 		}
 
-		return [
+		return [ 
 			'active'    => false,
 			'next_run'  => null,
 			'frequency' => null,
@@ -991,13 +1017,13 @@ class DIO_Cron_Admin {
 
 		// Debug: Add comment to see what screen we have.
 		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Debug display only, not processing form data
-		if ( isset( $_GET['page'] ) && 'dio-cron-status' === $_GET['page'] ) {
+		if ( isset( $_GET[ 'page' ] ) && 'dio-cron-status' === $_GET[ 'page' ] ) {
 			echo '<!-- DIO Cron Contextual Help Debug - Screen ID: ' . esc_html( $screen->id ) . ' -->';
 		}
 
 		// Check if this is our DIO Cron page - be more flexible with screen ID matching.
 		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Page identification only, not processing form data
-		if ( ! isset( $_GET['page'] ) || 'dio-cron-status' !== $_GET['page'] ) {
+		if ( ! isset( $_GET[ 'page' ] ) || 'dio-cron-status' !== $_GET[ 'page' ] ) {
 			return;
 		}
 
@@ -1016,7 +1042,7 @@ class DIO_Cron_Admin {
 
 		// Overview tab.
 		$screen->add_help_tab(
-			[
+			[ 
 				'id'      => 'dio_cron_help_overview',
 				'title'   => esc_html__( 'Overview', 'dio-cron' ),
 				'content' =>
@@ -1034,7 +1060,7 @@ class DIO_Cron_Admin {
 
 		// Endpoints // Endpoints & Security tab Security tab.
 		$screen->add_help_tab(
-			[
+			[ 
 				'id'      => 'dio_cron_help_endpoints',
 				'title'   => esc_html__( 'Endpoints & Security', 'dio-cron' ),
 				'content' =>
@@ -1051,7 +1077,7 @@ class DIO_Cron_Admin {
 
 		// Queue // Queue & Scheduling tab Scheduling tab.
 		$screen->add_help_tab(
-			[
+			[ 
 				'id'      => 'dio_cron_help_queue',
 				'title'   => esc_html__( 'Queue & Scheduling', 'dio-cron' ),
 				'content' =>
@@ -1066,7 +1092,7 @@ class DIO_Cron_Admin {
 
 		// Troubleshooting tab.
 		$screen->add_help_tab(
-			[
+			[ 
 				'id'      => 'dio_cron_help_troubleshooting',
 				'title'   => esc_html__( 'Troubleshooting', 'dio-cron' ),
 				'content' =>
@@ -1096,7 +1122,7 @@ class DIO_Cron_Admin {
 	public function debug_screen_info() {
 		// Only show on our admin page and for administrators.
 		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Page identification only, not form processing
-		if ( ! isset( $_GET['page'] ) || 'dio-cron-status' !== $_GET['page'] ) {
+		if ( ! isset( $_GET[ 'page' ] ) || 'dio-cron-status' !== $_GET[ 'page' ] ) {
 			return;
 		}
 
