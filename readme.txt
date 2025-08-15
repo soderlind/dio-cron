@@ -3,7 +3,7 @@ Contributors: PerS
 Tags: cron, multisite, wp-cron, action-scheduler, admin-interface, security
 Requires at least: 6.5
 Tested up to: 6.8
-Stable tag: 2.2.6
+Stable tag: 2.2.7
 Requires PHP: 8.2
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -12,28 +12,28 @@ Run wp-cron on all public sites in a multisite network with Action Scheduler int
 
 == Description ==
 
-DIO Cron triggers WordPress cron jobs across all public sites in your multisite network. Instead of each site running its own cron independently, this plugin coordinates everything from one place using Action Scheduler for better reliability and performance.
+DIO Cron triggers WordPress cron jobs across all public sites in your multisite network through external endpoints. Instead of each site running its own cron independently, this plugin coordinates everything from one place using Action Scheduler for better reliability and performance.
 
 > "Why not just use a simple cron job?" I run a cluster of WordPress sites and tried using shell scripts with WP-CLI, but ran into race condition problems. I needed a way to run cron jobs on all sites without them overlapping. This plugin solves that problem.
 
 = Key Benefits =
 
 * No race conditions or overlapping cron jobs
-* Better performance with queue-based processing
-* Built-in retry logic for failed sites
-* Easy monitoring and management
+* External trigger architecture for better reliability  
+* Queue-based processing with built-in retry logic
 * Comprehensive security with token authentication
 * Rate limiting and execution locking
-* WordPress time constants for better maintainability
+* Enhanced admin interface with real-time monitoring
 
 = Features =
 
-* **Network Admin Interface**: Complete admin panel at Network Admin → DIO Cron
+* **Network Admin Interface**: Complete admin panel at Network Admin → DIO Cron with enhanced user experience
 * **Action Scheduler Integration**: Queue-based background processing for better reliability  
 * **Security Token System**: Comprehensive authentication with admin interface management
-* **Recurring Jobs**: Automated scheduling with configurable frequencies (5 minutes to 24 hours)
-* **Enhanced Monitoring**: Real-time queue status and processing statistics
-* **Site Diagnostics**: Test individual sites for connectivity issues
+* **External Trigger Architecture**: Designed for server cron, Pingdom, GitHub Actions, and monitoring services
+* **Enhanced Monitoring**: Real-time queue status, processing statistics, and network-wide metrics
+* **Site Diagnostics**: Test individual sites for connectivity issues with detailed error reporting
+* **Contextual Help System**: Four comprehensive help tabs with troubleshooting guidance
 * **WordPress Standards**: Uses WordPress time constants and proper admin patterns
 * **Production Security**: WP_DEBUG-aware logging system with automatic protection 
 
@@ -106,12 +106,13 @@ The plugin creates multiple endpoints for different use cases. **All endpoints r
 Access the comprehensive admin interface at **Network Admin → DIO Cron** for:
 
 * **Generate and manage security tokens** for endpoint protection
-* **Queue Status**: View pending, in-progress, and failed actions
-* **Processing Statistics**: Success rates and daily completion counts
-* **Quick Actions**: Manual queue management and one-click site processing  
-* **Recurring Jobs**: Schedule automated processing with flexible frequencies (5 minutes to 24 hours)
-* **Site Diagnostics**: Test individual sites for connectivity issues
-* **Security Status**: Token protection, rate limiting, and execution lock monitoring
+* **Queue Status**: View pending, in-progress, and failed actions with real-time updates
+* **Processing Statistics**: Success rates, daily completion counts, and performance metrics
+* **Network-Wide Statistics**: Total runs, sites processed, and last execution tracking  
+* **Quick Actions**: Manual queue management and one-click site processing with immediate feedback
+* **Site Diagnostics**: Test individual sites for connectivity issues with detailed error reporting
+* **Enhanced Help System**: Four comprehensive help tabs (Overview, Queue & Processing, Endpoints & Security, Troubleshooting)
+* **Security Status**: Token protection, rate limiting, execution lock monitoring, and IP tracking
 
 = Security Features =
 
@@ -125,10 +126,10 @@ Access the comprehensive admin interface at **Network Admin → DIO Cron** for:
 
 = Trigger Options =
 
-Set up one of these to run cron jobs automatically. **Note: All endpoints require a security token.**
+Set up one of these external systems to trigger DIO Cron automatically. **Note: All endpoints require a security token.**
 
 1. **External Monitoring (Recommended)**
-   Services like Pingdom can ping your site every few minutes:
+   Services like Pingdom, UptimeRobot, or monitoring tools can ping your site every few minutes:
    
    Example URL to ping: `https://example.com/dio-cron?token=your-token-here`
    
@@ -157,6 +158,9 @@ Set up one of these to run cron jobs automatically. **Note: All endpoints requir
        steps:
          - run: curl -s "https://example.com/dio-cron?ga&token=${{ env.DIO_CRON_TOKEN }}"
    ```
+
+**Why External Triggers?**
+DIO Cron is designed to be triggered by external systems rather than self-scheduling for better reliability, predictable timing, and integration with monitoring systems.
 
 = Customization =
 
@@ -212,6 +216,16 @@ DIO Cron uses WordPress time constants for better code readability and maintaina
 These constants make timing configurations more readable and prevent calculation errors.
 
 == Changelog ==
+
+= 2.2.7 =
+* **Admin Interface Streamlining**: Removed confusing recurring job UI elements that didn't align with external trigger architecture
+* **Enhanced Contextual Help**: Updated comprehensive help system with four tabs (Overview, Queue & Processing, Endpoints & Security, Troubleshooting)
+* **Admin Notice System Fix**: Robust notice persistence through POST redirects using WordPress transients
+* **Site Diagnostics Enhancement**: Improved site testing functionality with better error handling and user feedback
+* **Network Statistics Consistency**: Fixed "Queue All Sites Now" to properly update Network-Wide Stats
+* **External Trigger Architecture**: Interface now accurately reflects dependency on external endpoint triggering (server cron, Pingdom, GitHub Actions)
+* **User Experience**: Cleaner admin interface with reduced complexity and better documentation alignment
+* **Quality Assurance**: PHP syntax validation and maintained WordPress coding standards throughout
 
 = 2.2.6 =
 * **Critical Bug Fix**: Network-wide statistics now update correctly with proper data integration
@@ -368,12 +382,13 @@ Another cron job is already running. Wait up to 5 minutes for it to complete or 
 
 = How do I monitor the plugin's performance? =
 
-Use the Network Admin interface at **Network Admin → DIO Cron** to view:
+Use the comprehensive Network Admin interface at **Network Admin → DIO Cron** to view:
 - Real-time queue status (pending, in-progress, failed actions)
-- Processing statistics and success rates
-- Recurring job schedules and next execution times
+- Processing statistics with success rates and daily metrics
+- Network-wide statistics (total runs, sites processed, last execution)
+- Individual site diagnostic testing with detailed error reporting
 
-You can also monitor detailed action history at **Tools → Scheduled Actions** (filter by group: `dio-cron`).
+You can also monitor detailed action history at **Network Admin → DIO Cron → Scheduled Actions** (filter by group: `dio-cron`) for complete job logs and performance analysis.
 
 = How do I enable detailed debugging? =
 

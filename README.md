@@ -9,13 +9,14 @@ Run cron jobs on all sites in a WordPress multisite network. Uses **Action Sched
 
 ## What It Does
 
-DIO Cron triggers WordPress cron jobs across all public sites in your multisite network. Instead of each site running its own cron independently, this plugin coordinates everything from one place.
+DIO Cron triggers WordPress cron jobs across all public sites in your multisite network through external endpoints. Instead of each site running its own cron independently, this plugin coordinates everything from one place using Action Scheduler for reliable queue-based processing.
 
 **Key Benefits:**
 - No race conditions or overlapping cron jobs
-- Better performance with queue-based processing
-- Built-in retry logic for failed sites
-- Easy monitoring and management
+- External trigger architecture for better reliability
+- Queue-based processing with built-in retry logic
+- Comprehensive admin interface with enhanced monitoring
+- Built-in security with token authentication and rate limiting
 
 ## Quick Setup
 
@@ -52,25 +53,28 @@ DIO Cron triggers WordPress cron jobs across all public sites in your multisite 
 ### Admin Interface
 Go to **Network Admin → DIO Cron** to:
 - **Generate and manage security tokens** for endpoint protection
-- See how many cron jobs are running or waiting
-- Manually trigger cron jobs for all sites
-- Set up automatic recurring jobs
-- Monitor success and failure rates
+- View comprehensive statistics: queue status, processing metrics, and network-wide stats
+- Manually trigger cron jobs for all sites with real-time feedback
+- Test individual sites for connectivity issues
+- Monitor security status with rate limiting and execution locks
+- Access enhanced help system with detailed troubleshooting guidance
 
 ### Automatic Triggers
-Set up one of these to run cron jobs automatically. **Note: All endpoints require a security token.**
+Set up one of these external systems to trigger DIO Cron automatically. **Note: All endpoints require a security token.**
 
 **1. External Monitoring (Recommended)**
-Services like Pingdom can ping your site every few minutes:
+Services like Pingdom, UptimeRobot, or monitoring tools can ping your site every few minutes:
 - `https://yoursite.com/dio-cron?token=your-token-here`
+- **Extra benefit:** You get notifications if the site is down
 
 **2. Server Cron Job**
-Add this to your server's crontab:
+Add this to your server's crontab (every 5 minutes):
 ```bash
 */5 * * * * curl -s "https://yoursite.com/dio-cron?token=your-token-here"
 ```
 
 **3. GitHub Actions**
+Create a workflow file for CI/CD integration:
 ```yaml
 name: DIO Cron
 on:
@@ -84,6 +88,13 @@ jobs:
     steps:
       - run: curl -s "https://yoursite.com/dio-cron?ga&token=${{ env.DIO_CRON_TOKEN }}"
 ```
+
+**Why External Triggers?**
+DIO Cron is designed to be triggered by external systems rather than self-scheduling. This approach provides:
+- Better reliability and predictable timing
+- Integration with monitoring and alerting systems
+- Reduced server load from internal scheduling overhead
+- Clear separation between scheduling and execution
 
 ### Available Endpoints
 **All endpoints require a `?token=your-token-here` parameter:**
@@ -126,12 +137,20 @@ define( 'DIO_CRON_TOKEN', 'your-secure-token-here' );
 
 ## Configuration
 
-### Recurring Jobs
-Set up automatic processing in the admin interface:
-- **5 minutes** - For time-sensitive sites
-- **15-30 minutes** - Good for most sites
-- **1-6 hours** - For stable sites that don't change much
-- **24 hours** - Daily maintenance
+### External Trigger Setup
+DIO Cron is designed to work with external schedulers. Choose the frequency that works best for your network:
+- **Every 5 minutes** - For time-sensitive applications
+- **Every 15-30 minutes** - Good balance for most sites  
+- **Every hour** - For stable sites with minimal updates
+- **Every 6-12 hours** - For maintenance and cleanup tasks
+
+### Admin Interface Features
+The Network Admin interface provides:
+- **Real-time Statistics**: Queue status, processing metrics, and network-wide statistics
+- **Site Diagnostics**: Test individual sites for connectivity and cron execution
+- **Token Management**: Secure endpoint authentication with easy token generation
+- **Enhanced Help System**: Comprehensive contextual help with troubleshooting guidance
+- **Action Integration**: Direct access to Action Scheduler for detailed job monitoring
 
 ### Customization
 Adjust how many sites to process at once:
@@ -262,20 +281,26 @@ DIO Cron includes detailed logging for debugging wp-cron triggers, but this feat
 - No debugging information is logged without explicit debug mode activation
 - Protects against accidental logging in live environments
 
-## Monitoring
+### Enhanced Monitoring & Diagnostics
+**Admin Interface Features:**
+- **Queue Status**: Real-time view of pending, in-progress, and failed actions
+- **Processing Statistics**: Daily completion counts and success rates  
+- **Network-Wide Stats**: Total runs, sites processed, and last execution time
+- **Site Diagnostics**: Test individual sites for connectivity issues with detailed error reporting
+- **Security Status**: Token protection status, rate limiting, and execution locks
 
-### Admin Dashboard
-The admin interface shows:
-- How many jobs are waiting to run
-- How many are currently running
-- How many failed today
-- Success rate percentage
-
-### Action Scheduler
-WordPress includes a detailed view at **Tools → Scheduled Actions** where you can:
-- See every job that ran
-- Check error messages for failed jobs
+**Action Scheduler Integration:**
+WordPress includes a detailed view at **Network Admin → DIO Cron → Scheduled Actions** where you can:
+- See every job that ran with timestamps and status
+- Check error messages for failed jobs with detailed logging
 - Retry failed jobs manually
+- Monitor queue performance and processing times
+
+**Enhanced Admin Experience:**
+- **Contextual Help**: Four comprehensive help tabs (Overview, Queue & Processing, Endpoints & Security, Troubleshooting)
+- **Persistent Notices**: Admin actions provide clear feedback that survives page redirects
+- **Error Handling**: Robust error reporting with user-friendly messages
+- **Security Integration**: Real-time security status and token management interface
 
 ## Migration from Legacy Version
 
