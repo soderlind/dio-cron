@@ -439,6 +439,7 @@ class DIO_Cron_Admin {
 
 		$queue_status     = $queue_manager->get_queue_status();
 		$processing_stats = $site_processor->get_processing_stats();
+		$network_stats    = DIO_Cron_Utilities::get_network_stats();
 
 		?>
 		<div class="wrap dio-cron-admin-page">
@@ -467,8 +468,8 @@ class DIO_Cron_Admin {
 					</p>
 					<p>
 						<code style="background: #f1f1f1; padding: 4px 8px; font-family: 'Courier New', monospace;">
-																																																																																																	define( 'DISABLE_WP_CRON', true );
-																																																																																																</code>
+																																																																																																							define( 'DISABLE_WP_CRON', true );
+																																																																																																						</code>
 					</p>
 					<p>
 						<strong><?php esc_html_e( 'Important:', 'dio-cron' ); ?></strong>
@@ -479,12 +480,14 @@ class DIO_Cron_Admin {
 
 			<div class="dio-cron-main-content">
 				<div class="postbox">
-					<h2 class="hndle"><?php esc_html_e( 'Queue Status', 'dio-cron' ); ?></h2>
+					<h2 class="hndle"><?php esc_html_e( 'DIO Cron Statistics', 'dio-cron' ); ?></h2>
 					<div class="inside">
+						<!-- Queue Status -->
+						<h3 style="margin-top:0;"><?php esc_html_e( 'Queue Status', 'dio-cron' ); ?></h3>
 						<?php if ( isset( $queue_status['error'] ) ) : ?>
 							<p class="description dio-cron-error"><?php echo esc_html( $queue_status['error'] ); ?></p>
 						<?php else : ?>
-							<table class="widefat dio-cron-stats-table">
+							<table class="widefat dio-cron-stats-table" style="margin-bottom:16px;">
 								<tbody>
 									<tr>
 										<td><strong><?php esc_html_e( 'Pending Actions', 'dio-cron' ); ?></strong></td>
@@ -501,16 +504,13 @@ class DIO_Cron_Admin {
 								</tbody>
 							</table>
 						<?php endif; ?>
-					</div>
-				</div>
 
-				<div class="postbox">
-					<h2 class="hndle"><?php esc_html_e( 'Processing Statistics (Today)', 'dio-cron' ); ?></h2>
-					<div class="inside">
+						<!-- Processing Statistics (Today) -->
+						<h3><?php esc_html_e( 'Processing Statistics (Today)', 'dio-cron' ); ?></h3>
 						<?php if ( isset( $processing_stats['error'] ) ) : ?>
 							<p class="description dio-cron-error"><?php echo esc_html( $processing_stats['error'] ); ?></p>
 						<?php else : ?>
-							<table class="widefat dio-cron-stats-table">
+							<table class="widefat dio-cron-stats-table" style="margin-bottom:16px;">
 								<tbody>
 									<tr>
 										<td><strong><?php esc_html_e( 'Completed', 'dio-cron' ); ?></strong></td>
@@ -527,6 +527,26 @@ class DIO_Cron_Admin {
 								</tbody>
 							</table>
 						<?php endif; ?>
+
+						<!-- Network-Wide DIO Cron Stats -->
+						<h3><?php esc_html_e( 'Network-Wide DIO Cron Stats', 'dio-cron' ); ?></h3>
+						<table class="widefat dio-cron-stats-table">
+							<tbody>
+								<tr>
+									<td><strong><?php esc_html_e( 'Total Runs', 'dio-cron' ); ?></strong></td>
+									<td><?php echo intval( $network_stats['total_runs'] ); ?></td>
+								</tr>
+								<tr>
+									<td><strong><?php esc_html_e( 'Total Sites Processed', 'dio-cron' ); ?></strong></td>
+									<td><?php echo intval( $network_stats['total_sites_processed'] ); ?></td>
+								</tr>
+								<tr>
+									<td><strong><?php esc_html_e( 'Last Run', 'dio-cron' ); ?></strong></td>
+									<td><?php echo $network_stats['last_run'] ? esc_html( date_i18n( get_option( 'date_format' ) . ' ' . get_option( 'time_format' ), $network_stats['last_run'] ) ) : esc_html__( 'Never', 'dio-cron' ); ?>
+									</td>
+								</tr>
+							</tbody>
+						</table>
 					</div>
 				</div>
 
@@ -661,8 +681,8 @@ class DIO_Cron_Admin {
 							</a>
 						<?php else : ?>
 							<code class="dio-cron-disabled-endpoint">
-																																																																										<?php echo esc_url( home_url( '/dio-cron?token=YOUR_TOKEN_HERE' ) ); ?>
-																																																																									</code>
+																																																																																<?php echo esc_url( home_url( '/dio-cron?token=YOUR_TOKEN_HERE' ) ); ?>
+																																																																															</code>
 						<?php endif; ?>
 
 						<p><strong><?php esc_html_e( 'Legacy Mode:', 'dio-cron' ); ?></strong></p>
@@ -673,8 +693,8 @@ class DIO_Cron_Admin {
 							</a>
 						<?php else : ?>
 							<code class="dio-cron-disabled-endpoint">
-																																																																										<?php echo esc_url( home_url( '/dio-cron?immediate=1&token=YOUR_TOKEN_HERE' ) ); ?>
-																																																																									</code>
+																																																																																<?php echo esc_url( home_url( '/dio-cron?immediate=1&token=YOUR_TOKEN_HERE' ) ); ?>
+																																																																															</code>
 						<?php endif; ?>
 
 						<p><strong><?php esc_html_e( 'GitHub Actions:', 'dio-cron' ); ?></strong></p>
@@ -685,8 +705,8 @@ class DIO_Cron_Admin {
 							</a>
 						<?php else : ?>
 							<code class="dio-cron-disabled-endpoint">
-																																																																										<?php echo esc_url( home_url( '/dio-cron?ga&token=YOUR_TOKEN_HERE' ) ); ?>
-																																																																									</code>
+																																																																																<?php echo esc_url( home_url( '/dio-cron?ga&token=YOUR_TOKEN_HERE' ) ); ?>
+																																																																															</code>
 						<?php endif; ?>
 					</div>
 				</div>
@@ -773,6 +793,8 @@ class DIO_Cron_Admin {
 						</div>
 					</div>
 				</div>
+
+
 			</div>
 		</div>
 		<?php

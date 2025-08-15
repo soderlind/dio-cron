@@ -3,7 +3,7 @@ Contributors: PerS
 Tags: cron, multisite, wp-cron, action-scheduler, admin-interface, security
 Requires at least: 6.5
 Tested up to: 6.8
-Stable tag: 2.2.4
+Stable tag: 2.2.5
 Requires PHP: 8.2
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -212,6 +212,15 @@ DIO Cron uses WordPress time constants for better code readability and maintaina
 These constants make timing configurations more readable and prevent calculation errors.
 
 == Changelog ==
+
+= 2.2.5 =
+* **Execution Locking & Concurrency Control**: Improved execution lock logic to prevent concurrent or rapid repeated runs network-wide
+* **User Interface Consolidation**: Unified "DIO Cron Statistics" panel combining Queue Status, Processing Statistics, and Network-Wide stats
+* **Enhanced Monitoring**: Single-pane view for all statistics with improved visual hierarchy
+* **Streamlined Admin Interface**: Removed duplicate Network-Wide stats sidebar for cleaner layout
+* **Responsive Design**: Better mobile compatibility with improved spacing and typography
+* **Performance Optimization**: Reduced duplicate data retrieval with consolidated statistics approach
+* **Visual Design Enhancement**: Clear section headers and consistent table styling throughout interface
 
 = 2.2.4 =
 * **Production File Cleanup**: Removed all test and debug files for clean deployment structure

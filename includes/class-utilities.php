@@ -15,6 +15,45 @@ if ( ! defined( 'ABSPATH' ) ) {
  * Shared utilities class for common functionality across DIO Cron classes
  */
 class DIO_Cron_Utilities {
+	/**
+	 * Update network-wide stats for DIO Cron runs.
+	 *
+	 * @param int $sites_processed Number of sites processed in this run.
+	 * @return void
+	 */
+	public static function update_network_stats( int $sites_processed ) {
+		$key   = 'dio_cron_network_stats';
+		$stats = get_site_transient( $key );
+		if ( ! is_array( $stats ) ) {
+			$stats = [
+				'total_runs'            => 0,
+				'last_run'              => 0,
+				'total_sites_processed' => 0,
+			];
+		}
+		++$stats['total_runs'];
+		$stats['last_run']               = time();
+		$stats['total_sites_processed'] += $sites_processed;
+		set_site_transient( $key, $stats, DAY_IN_SECONDS );
+	}
+
+	/**
+	 * Get network-wide stats for DIO Cron runs.
+	 *
+	 * @return array
+	 */
+	public static function get_network_stats() {
+		$key   = 'dio_cron_network_stats';
+		$stats = get_site_transient( $key );
+		if ( ! is_array( $stats ) ) {
+			$stats = [
+				'total_runs'            => 0,
+				'last_run'              => 0,
+				'total_sites_processed' => 0,
+			];
+		}
+		return $stats;
+	}
 
 	/**
 	 * Check if Action Scheduler is available
@@ -509,24 +548,44 @@ class DIO_Cron_Utilities {
 	}
 
 	/**
-	 * Acquire execution lock to prevent concurrent runs
+	 * Acquire a network-wide execution lock using site transients.
+	 * Prevents concurrent runs across all servers in a multisite/cluster environment.
+	 * Also prevents rapid re-entry (double-run) within a short window.
 	 *
 	 * @param int $timeout Lock timeout in seconds.
-	 * @return bool
+	 * @param int $min_interval Minimum seconds between runs (last-run protection).
+	 * @return bool True if lock acquired, false if already locked or ran too recently.
 	 */
-	public static function acquire_execution_lock( int $timeout = 5 * MINUTE_IN_SECONDS ): bool {
-		$lock_key = 'dio_cron_execution_lock';
-
-		if ( get_site_transient( $lock_key ) ) {
+	public static function acquire_execution_lock( int $timeout = 300, int $min_interval = 60 ): bool {
+		$lock_key     = 'dio_cron_execution_lock';
+		$last_run_key = 'dio_cron_last_run';
+		$now          = time();
+		$last_run     = (int) get_site_transient( $last_run_key );
+		if ( $last_run && ( $now - $last_run ) < $min_interval ) {
+			return false; // Ran too recently.
+		}
+		$lock = get_site_transient( $lock_key );
+		if ( $lock && isset( $lock['expires'] ) && $lock['expires'] > $now ) {
 			return false; // Already locked.
 		}
-
-		set_site_transient( $lock_key, time(), $timeout );
-		return true;
+		$lock_data = [
+			'server'    => gethostname(),
+			'pid'       => function_exists( 'getmypid' ) ? getmypid() : null,
+			'timestamp' => $now,
+			'expires'   => $now + $timeout,
+		];
+		set_site_transient( $lock_key, $lock_data, $timeout );
+		// Double-check we got the lock (race protection)
+		$verify = get_site_transient( $lock_key );
+		if ( $verify && $verify['timestamp'] === $now ) {
+			set_site_transient( $last_run_key, $now, $timeout );
+			return true;
+		}
+		return false;
 	}
 
 	/**
-	 * Release execution lock
+	 * Release the network-wide execution lock.
 	 *
 	 * @return bool
 	 */
@@ -535,12 +594,26 @@ class DIO_Cron_Utilities {
 	}
 
 	/**
-	 * Check if execution is currently locked
+	 * Check if execution is currently locked (network-wide).
 	 *
 	 * @return bool
 	 */
 	public static function is_execution_locked() {
-		return false !== get_site_transient( 'dio_cron_execution_lock' );
+		$lock = get_site_transient( 'dio_cron_execution_lock' );
+		return ( $lock && isset( $lock['expires'] ) && $lock['expires'] > time() );
+	}
+
+	/**
+	 * Get info about the current lock holder (for debugging/logging).
+	 *
+	 * @return array|null
+	 */
+	public static function get_execution_lock_info() {
+		$lock = get_site_transient( 'dio_cron_execution_lock' );
+		if ( $lock && isset( $lock['expires'] ) && $lock['expires'] > time() ) {
+			return $lock;
+		}
+		return null;
 	}
 
 	/**
