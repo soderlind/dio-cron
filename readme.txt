@@ -214,6 +214,7 @@ These constants make timing configurations more readable and prevent calculation
 == Changelog ==
 
 = 2.2.5 =
+* **Execution Locking & Concurrency Control**: Improved execution lock logic to prevent concurrent or rapid repeated runs network-wide
 * **User Interface Consolidation**: Unified "DIO Cron Statistics" panel combining Queue Status, Processing Statistics, and Network-Wide stats
 * **Enhanced Monitoring**: Single-pane view for all statistics with improved visual hierarchy
 * **Streamlined Admin Interface**: Removed duplicate Network-Wide stats sidebar for cleaner layout
