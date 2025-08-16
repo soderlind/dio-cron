@@ -5,7 +5,7 @@
  * @package DIO_Cron
  */
 
-namespace Soderlind\Multisite\Cron;
+namespace Soderlind\Multisite\DioCron;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
@@ -21,7 +21,7 @@ class DIO_Cron {
 	 *
 	 * @var string VERSION Plugin version
 	 */
-	const VERSION = '2.2.12';    /**
+	const VERSION = '2.2.13';    /**
 			* Instance of the queue manager
 			*
 			* @var DIO_Cron_Queue_Manager

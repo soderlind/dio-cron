@@ -5,7 +5,7 @@
  * @package DIO_Cron
  */
 
-namespace Soderlind\Multisite\Cron;
+namespace Soderlind\Multisite\DioCron;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly.
@@ -460,8 +460,8 @@ class DIO_Cron_Admin {
 					</p>
 					<p>
 						<code style="background: #f1f1f1; padding: 4px 8px; font-family: 'Courier New', monospace;">
-																																																																																																																						define( 'DISABLE_WP_CRON', true );
-																																																																																																																					</code>
+																																																																																																																									define( 'DISABLE_WP_CRON', true );
+																																																																																																																								</code>
 					</p>
 					<p>
 						<strong><?php esc_html_e( 'Important:', 'dio-cron' ); ?></strong>
@@ -676,8 +676,8 @@ class DIO_Cron_Admin {
 							</a>
 						<?php else : ?>
 							<code class="dio-cron-disabled-endpoint">
-																																																																																															<?php echo esc_url( home_url( '/dio-cron?token=YOUR_TOKEN_HERE' ) ); ?>
-																																																																																														</code>
+																																																																																																		<?php echo esc_url( home_url( '/dio-cron?token=YOUR_TOKEN_HERE' ) ); ?>
+																																																																																																	</code>
 						<?php endif; ?>
 
 						<p><strong><?php esc_html_e( 'Legacy Mode:', 'dio-cron' ); ?></strong></p>
@@ -688,8 +688,8 @@ class DIO_Cron_Admin {
 							</a>
 						<?php else : ?>
 							<code class="dio-cron-disabled-endpoint">
-																																																																																															<?php echo esc_url( home_url( '/dio-cron?immediate=1&token=YOUR_TOKEN_HERE' ) ); ?>
-																																																																																														</code>
+																																																																																																		<?php echo esc_url( home_url( '/dio-cron?immediate=1&token=YOUR_TOKEN_HERE' ) ); ?>
+																																																																																																	</code>
 						<?php endif; ?>
 
 						<p><strong><?php esc_html_e( 'GitHub Actions:', 'dio-cron' ); ?></strong></p>
@@ -700,8 +700,8 @@ class DIO_Cron_Admin {
 							</a>
 						<?php else : ?>
 							<code class="dio-cron-disabled-endpoint">
-																																																																																															<?php echo esc_url( home_url( '/dio-cron?ga&token=YOUR_TOKEN_HERE' ) ); ?>
-																																																																																														</code>
+																																																																																																		<?php echo esc_url( home_url( '/dio-cron?ga&token=YOUR_TOKEN_HERE' ) ); ?>
+																																																																																																	</code>
 						<?php endif; ?>
 					</div>
 				</div>

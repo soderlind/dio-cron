@@ -9,7 +9,7 @@
 
 // phpcs:disable WordPress.Files.FileName.InvalidClassFileName
 
-namespace Soderlind\Multisite\Cron;
+namespace Soderlind\Multisite\DioCron;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
@@ -123,7 +123,7 @@ class DIO_Cron_Site_Processor {
 			sprintf(
 				'DIO Cron Success: Site %s completed - Response: %d (%.2fs)',
 				$site_url,
-				$result['response_code'] ?? 'N/A',
+				$result[ 'response_code' ] ?? 'N/A',
 				$execution_time
 			)
 		);
@@ -151,11 +151,11 @@ class DIO_Cron_Site_Processor {
 			)
 		);
 
-		$args = [
+		$args = [ 
 			'blocking'  => true,  // We want to wait for the response in queued processing.
 			'sslverify' => false,
 			'timeout'   => $timeout,
-			'headers'   => [
+			'headers'   => [ 
 				'User-Agent' => 'DIO-Cron/' . DIO_Cron::VERSION,
 			],
 		];
@@ -210,7 +210,7 @@ class DIO_Cron_Site_Processor {
 
 		// Consider anything in the 200 range as success.
 		if ( $response_code >= 200 && $response_code < 300 ) {
-			return [
+			return [ 
 				'success'        => true,
 				'response_code'  => $response_code,
 				'site_url'       => $site_url,
@@ -236,7 +236,7 @@ class DIO_Cron_Site_Processor {
 				esc_html__( 'HTTP %d: Cron request failed', 'dio-cron' ),
 				intval( $response_code )
 			),
-			[
+			[ 
 				'response_code'  => $response_code,
 				'execution_time' => $exec_time,
 				'timeout_used'   => $timeout,
@@ -272,7 +272,7 @@ class DIO_Cron_Site_Processor {
 	 */
 	public function process_sites_batch( $sites ) {
 		if ( empty( $sites ) ) {
-			return [
+			return [ 
 				'success'   => false,
 				'message'   => esc_html__( 'No sites provided for processing', 'dio-cron' ),
 				'processed' => 0,
@@ -310,7 +310,7 @@ class DIO_Cron_Site_Processor {
 		$end_time       = microtime( true );
 		$execution_time = number_format( $end_time - $start_time, 2 );
 
-		return [
+		return [ 
 			'success'        => empty( $errors ),
 			'message'        => empty( $errors ) ?
 				sprintf(
@@ -344,7 +344,7 @@ class DIO_Cron_Site_Processor {
 	 */
 	public function get_processing_stats() {
 		if ( ! DIO_Cron_Utilities::is_action_scheduler_available() ) {
-			return [
+			return [ 
 				'error' => 'Action Scheduler is not available',
 			];
 		}
@@ -375,7 +375,7 @@ class DIO_Cron_Site_Processor {
 		$today_end          = strtotime( 'tomorrow midnight', $current_local_time ) - 1;
 		$wp_current_time    = current_time( 'Y-m-d H:i:s' );
 
-		return [
+		return [ 
 			'timezone'              => $wp_timezone,
 			'current_local_time'    => $current_local_time,
 			'current_time_readable' => $wp_current_time,
@@ -397,7 +397,7 @@ class DIO_Cron_Site_Processor {
 		$total_today  = $completed_count + $failed_count;
 		$success_rate = $total_today > 0 ? ( $completed_count / $total_today ) * 100 : 0;
 
-		return [
+		return [ 
 			'completed_today' => $completed_count,
 			'failed_today'    => $failed_count,
 			'success_rate'    => $success_rate,
@@ -416,28 +416,28 @@ class DIO_Cron_Site_Processor {
 	 */
 	private function format_stats_response( $stats, $date_info, $method_used, $additional_debug = [] ) {
 		$debug_info = array_merge(
-			[
-				'current_time'          => $date_info['current_local_time'],
-				'current_time_readable' => $date_info['current_time_readable'],
-				'today_start'           => $date_info['today_start'],
-				'today_end'             => $date_info['today_end'],
-				'today_start_readable'  => $date_info['today_start_readable'],
-				'today_end_readable'    => $date_info['today_end_readable'],
-				'timezone'              => $date_info['timezone'],
-				'total_completed'       => $stats['completed_today'],
-				'total_failed'          => $stats['failed_today'],
-				'filtered_completed'    => $stats['completed_today'],
-				'filtered_failed'       => $stats['failed_today'],
+			[ 
+				'current_time'          => $date_info[ 'current_local_time' ],
+				'current_time_readable' => $date_info[ 'current_time_readable' ],
+				'today_start'           => $date_info[ 'today_start' ],
+				'today_end'             => $date_info[ 'today_end' ],
+				'today_start_readable'  => $date_info[ 'today_start_readable' ],
+				'today_end_readable'    => $date_info[ 'today_end_readable' ],
+				'timezone'              => $date_info[ 'timezone' ],
+				'total_completed'       => $stats[ 'completed_today' ],
+				'total_failed'          => $stats[ 'failed_today' ],
+				'filtered_completed'    => $stats[ 'completed_today' ],
+				'filtered_failed'       => $stats[ 'failed_today' ],
 				'method_used'           => $method_used,
 				'sample_action_dates'   => [],
 			],
 			$additional_debug
 		);
 
-		return [
-			'completed_today' => $stats['completed_today'],
-			'failed_today'    => $stats['failed_today'],
-			'success_rate'    => $stats['success_rate'],
+		return [ 
+			'completed_today' => $stats[ 'completed_today' ],
+			'failed_today'    => $stats[ 'failed_today' ],
+			'success_rate'    => $stats[ 'success_rate' ],
 			'debug_info'      => $debug_info,
 		];
 	}
@@ -449,8 +449,8 @@ class DIO_Cron_Site_Processor {
 	 * @return array|null
 	 */
 	private function get_stats_via_direct_query( $date_info ) {
-		$completed_count = $this->count_actions_fast( 'complete', $date_info['today_start'], $date_info['today_end'] );
-		$failed_count    = $this->count_actions_fast( 'failed', $date_info['today_start'], $date_info['today_end'] );
+		$completed_count = $this->count_actions_fast( 'complete', $date_info[ 'today_start' ], $date_info[ 'today_end' ] );
+		$failed_count    = $this->count_actions_fast( 'failed', $date_info[ 'today_start' ], $date_info[ 'today_end' ] );
 
 		// If counts are non-zero (or zero but valid), return stats directly.
 		if ( null !== $completed_count && null !== $failed_count ) {
@@ -470,7 +470,7 @@ class DIO_Cron_Site_Processor {
 	private function get_stats_via_action_scheduler_api( $date_info ) {
 		// Get all completed and failed actions.
 		$completed_all = as_get_scheduled_actions(
-			[
+			[ 
 				'hook'     => 'dio_cron_process_site',
 				'status'   => 'complete',
 				'group'    => 'dio-cron',
@@ -479,7 +479,7 @@ class DIO_Cron_Site_Processor {
 		);
 
 		$failed_all = as_get_scheduled_actions(
-			[
+			[ 
 				'hook'     => 'dio_cron_process_site',
 				'status'   => 'failed',
 				'group'    => 'dio-cron',
@@ -498,19 +498,19 @@ class DIO_Cron_Site_Processor {
 		$stats = $this->calculate_stats( $completed_count, $failed_count );
 
 		// If we still don't have any data, try a simpler approach.
-		if ( 0 === $stats['total_today'] ) {
+		if ( 0 === $stats[ 'total_today' ] ) {
 			$stats = $this->get_recent_stats_fallback( $date_info );
 		}
 
-		$additional_debug = [
+		$additional_debug = [ 
 			'total_completed'     => count( $completed_all ),
 			'total_failed'        => count( $failed_all ),
-			'method_used'         => 0 === $stats['total_today'] ? 'fallback' : 'fallback_manual_filter',
+			'method_used'         => 0 === $stats[ 'total_today' ] ? 'fallback' : 'fallback_manual_filter',
 			'sample_action_dates' => $this->get_sample_action_dates( $completed_all, $failed_all ),
 			'all_action_dates'    => array_slice( $debug_dates, 0, 10 ), // First 10 for debugging.
 		];
 
-		return $this->format_stats_response( $stats, $date_info, $additional_debug['method_used'], $additional_debug );
+		return $this->format_stats_response( $stats, $date_info, $additional_debug[ 'method_used' ], $additional_debug );
 	}
 
 	/**
@@ -527,13 +527,13 @@ class DIO_Cron_Site_Processor {
 
 		foreach ( $actions as $action ) {
 			$action_date   = $this->get_action_date( $action );
-			$debug_dates[] = [
+			$debug_dates[] = [ 
 				'type'     => $type,
 				'date'     => $action_date,
 				'readable' => $action_date ? wp_date( 'Y-m-d H:i:s', $action_date ) : 'null',
-				'in_range' => $action_date && $action_date >= $date_info['today_start'] && $action_date <= $date_info['today_end'],
+				'in_range' => $action_date && $action_date >= $date_info[ 'today_start' ] && $action_date <= $date_info[ 'today_end' ],
 			];
-			if ( $action_date && $action_date >= $date_info['today_start'] && $action_date <= $date_info['today_end'] ) {
+			if ( $action_date && $action_date >= $date_info[ 'today_start' ] && $action_date <= $date_info[ 'today_end' ] ) {
 				++$count;
 			}
 		}
@@ -550,7 +550,7 @@ class DIO_Cron_Site_Processor {
 	private function get_recent_stats_fallback( $date_info ) {
 		// Get recent actions without date filtering.
 		$recent_completed = as_get_scheduled_actions(
-			[
+			[ 
 				'hook'     => 'dio_cron_process_site',
 				'status'   => 'complete',
 				'group'    => 'dio-cron',
@@ -559,7 +559,7 @@ class DIO_Cron_Site_Processor {
 		);
 
 		$recent_failed = as_get_scheduled_actions(
-			[
+			[ 
 				'hook'     => 'dio_cron_process_site',
 				'status'   => 'failed',
 				'group'    => 'dio-cron',
@@ -573,14 +573,14 @@ class DIO_Cron_Site_Processor {
 		// Count recent actions from today.
 		foreach ( $recent_completed as $action ) {
 			$action_date = $this->get_action_date( $action );
-			if ( $action_date && $action_date >= $date_info['today_start'] ) {
+			if ( $action_date && $action_date >= $date_info[ 'today_start' ] ) {
 				++$completed_count;
 			}
 		}
 
 		foreach ( $recent_failed as $action ) {
 			$action_date = $this->get_action_date( $action );
-			if ( $action_date && $action_date >= $date_info['today_start'] ) {
+			if ( $action_date && $action_date >= $date_info[ 'today_start' ] ) {
 				++$failed_count;
 			}
 		}
@@ -679,7 +679,7 @@ class DIO_Cron_Site_Processor {
 			}
 			$date = $this->get_action_date( $action );
 			if ( $date ) {
-				$samples['completed'][] = [
+				$samples[ 'completed' ][] = [ 
 					'timestamp'   => $date,
 					'readable'    => date_i18n( 'Y-m-d H:i:s', $date ),
 					'object_type' => get_class( $action ),
@@ -696,7 +696,7 @@ class DIO_Cron_Site_Processor {
 			}
 			$date = $this->get_action_date( $action );
 			if ( $date ) {
-				$samples['failed'][] = [
+				$samples[ 'failed' ][] = [ 
 					'timestamp'   => $date,
 					'readable'    => date_i18n( 'Y-m-d H:i:s', $date ),
 					'object_type' => get_class( $action ),

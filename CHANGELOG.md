@@ -1,5 +1,21 @@
 ## ⚙️ Changelog
 
+### 2.2.13 - Namespace Refactoring
+
+🏗️ **Code Organization**: Updated namespace from `Soderlind\Multisite\Cron` to `Soderlind\Multisite\DioCron`
+
+#### 🔧 Namespace Updates
+- **📦 Consistent Naming**: Changed namespace to match plugin name `DioCron` for better code organization
+- **🏛️ Code Structure**: Updated all class files to use new `Soderlind\Multisite\DioCron` namespace
+- **🔄 Reference Updates**: Updated all namespace references across plugin files including uninstall script
+- **📋 File Coverage**: Updated namespace in main plugin file, all class files, and utility scripts
+
+#### 💡 Technical Improvements
+- **🎯 Better Organization**: More logical namespace structure that reflects plugin naming
+- **🔐 Code Consistency**: Consistent namespace usage across entire codebase
+- **📈 Maintainability**: Improved code organization for future development
+- **🛡️ Quality Assurance**: All syntax checks passed after namespace changes
+
 ### 2.2.12 - Action Scheduler Missing Functions.php Fix
 
 🛠️ **Critical Fix**: Resolved Action Scheduler initialization error requiring missing functions.php file
