@@ -3,7 +3,7 @@ Contributors: PerS
 Tags: cron, multisite, wp-cron, action-scheduler, admin-interface, security
 Requires at least: 6.5
 Tested up to: 6.8
-Stable tag: 2.2.11
+Stable tag: 2.2.12
 Requires PHP: 8.2
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -276,6 +276,15 @@ DIO Cron includes detailed logging for debugging wp-cron triggers, but this feat
 1. No screenshots available.
 
 == Changelog ==
+
+= 2.2.12 =
+* **Critical Bug Fix**: Resolved "Failed to open stream: No such file or directory" error for missing functions.php file
+* **Action Scheduler Integration**: Fixed ActionScheduler::init() calls when another plugin provides Action Scheduler  
+* **Plugin Compatibility**: Enhanced compatibility with plugins like multisite-exporter that bundle Action Scheduler
+* **Defensive Programming**: Only initialize bundled Action Scheduler when no other version is available
+* **Automatic File Creation**: Creates minimal functions.php file when initializing our bundled Action Scheduler
+* **Smart Detection**: Improved logic to avoid calling ActionScheduler::init() for externally provided instances
+* **Error Prevention**: Prevents fatal errors caused by Action Scheduler expecting functions.php files
 
 = 2.2.11 =
 * **Enhanced Action Scheduler Conflict Prevention**: Comprehensive multi-level checks to prevent function redeclaration errors
