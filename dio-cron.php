@@ -3,7 +3,7 @@
  * Plugin Name: DIO Cron
  * Plugin URI: https://github.com/soderlind/dio-cron
  * Description: Run wp-cron on all public sites in a multisite network with Action Scheduler integration, security token authentication, and comprehensive network admin interface.
- * Version: 2.2.9
+ * Version: 2.2.10
  * Author: Per Soderlind
  * Author URI: https://soderlind.no
  * License: GPL-2.0+
@@ -52,9 +52,12 @@ register_deactivation_hook( __FILE__, [ DIO_Cron::class, 'deactivate' ] );
 
 // Initialize Action Scheduler early on plugins_loaded.
 add_action( 'plugins_loaded', function () {
-	$action_scheduler_path = __DIR__ . '/vendor/woocommerce/action-scheduler/action-scheduler.php';
-	if ( file_exists( $action_scheduler_path ) ) {
-		require_once $action_scheduler_path;
+	// Only load our bundled Action Scheduler if it's not already loaded by another plugin
+	if ( ! function_exists( 'as_enqueue_async_action' ) && ! class_exists( 'ActionScheduler' ) ) {
+		$action_scheduler_path = __DIR__ . '/vendor/woocommerce/action-scheduler/action-scheduler.php';
+		if ( file_exists( $action_scheduler_path ) ) {
+			require_once $action_scheduler_path;
+		}
 	}
 }, 0 );
 

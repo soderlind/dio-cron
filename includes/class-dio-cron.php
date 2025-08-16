@@ -21,7 +21,7 @@ class DIO_Cron {
 	 *
 	 * @var string VERSION Plugin version
 	 */
-	const VERSION = '2.2.9';    /**
+	const VERSION = '2.2.10';    /**
 			* Instance of the queue manager
 			*
 			* @var DIO_Cron_Queue_Manager
@@ -94,22 +94,24 @@ class DIO_Cron {
 	 * @return void
 	 */
 	private function init_action_scheduler() {
-		// Load Action Scheduler if not already loaded.
-		if ( ! class_exists( '\ActionScheduler' ) ) {
-			require_once plugin_dir_path( __DIR__ ) . 'vendor/woocommerce/action-scheduler/action-scheduler.php';
+		// Only load Action Scheduler if it's not already loaded by another plugin
+		if ( ! class_exists( '\ActionScheduler' ) && ! function_exists( 'as_enqueue_async_action' ) ) {
+			$action_scheduler_path = plugin_dir_path( __DIR__ ) . 'vendor/woocommerce/action-scheduler/action-scheduler.php';
+			if ( file_exists( $action_scheduler_path ) ) {
+				require_once $action_scheduler_path;
+			}
 		}
 
-		// Initialize Action Scheduler.
-		if ( class_exists( '\ActionScheduler' ) && ! did_action( 'action_scheduler_init' ) ) {
-			do_action( 'action_scheduler_init' );
+		// Initialize Action Scheduler if it's available and we're in a proper WordPress context
+		if ( class_exists( '\ActionScheduler' ) && method_exists( '\ActionScheduler', 'init' ) ) {
+			$plugin_file = plugin_dir_path( __DIR__ ) . 'dio-cron.php';
+			\ActionScheduler::init( $plugin_file );
 		}
-	}
-
-	/**
-	 * Load required dependencies
-	 *
-	 * @return void
-	 */
+	}	/**
+		 * Load required dependencies
+		 *
+		 * @return void
+		 */
 	private function load_dependencies() {
 		require_once plugin_dir_path( __FILE__ ) . 'class-utilities.php';
 		require_once plugin_dir_path( __FILE__ ) . 'class-queue-manager.php';
