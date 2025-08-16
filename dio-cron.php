@@ -3,7 +3,7 @@
  * Plugin Name: DIO Cron
  * Plugin URI: https://github.com/soderlind/dio-cron
  * Description: Run wp-cron on all public sites in a multisite network with Action Scheduler integration, security token authentication, and comprehensive network admin interface.
- * Version: 2.2.12
+ * Version: 2.2.13
  * Author: Per Soderlind
  * Author URI: https://soderlind.no
  * License: GPL-2.0+
@@ -18,7 +18,7 @@
  * @license     GPL-2.0+
  */
 
-namespace Soderlind\Multisite\Cron;
+namespace Soderlind\Multisite\DioCron;
 
 // Prevent direct access.
 if ( ! defined( 'ABSPATH' ) ) {
