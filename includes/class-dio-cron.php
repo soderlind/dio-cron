@@ -21,7 +21,7 @@ class DIO_Cron {
 	 *
 	 * @var string VERSION Plugin version
 	 */
-	const VERSION = '2.2.10';    /**
+	const VERSION = '2.2.11';    /**
 			* Instance of the queue manager
 			*
 			* @var DIO_Cron_Queue_Manager
@@ -94,18 +94,34 @@ class DIO_Cron {
 	 * @return void
 	 */
 	private function init_action_scheduler() {
-		// Only load Action Scheduler if it's not already loaded by another plugin
-		if ( ! class_exists( '\ActionScheduler' ) && ! function_exists( 'as_enqueue_async_action' ) ) {
-			$action_scheduler_path = plugin_dir_path( __DIR__ ) . 'vendor/woocommerce/action-scheduler/action-scheduler.php';
-			if ( file_exists( $action_scheduler_path ) ) {
-				require_once $action_scheduler_path;
+		// If Action Scheduler is already initialized, don't try to load it again
+		if ( function_exists( 'as_enqueue_async_action' ) || class_exists( '\ActionScheduler' ) ) {
+			// Action Scheduler is already available, just initialize it for our plugin if needed
+			if ( class_exists( '\ActionScheduler' ) && method_exists( '\ActionScheduler', 'init' ) ) {
+				$plugin_file = plugin_dir_path( __DIR__ ) . 'dio-cron.php';
+				if ( ! \ActionScheduler::is_initialized( $plugin_file ) ) {
+					\ActionScheduler::init( $plugin_file );
+				}
 			}
+			return;
 		}
 
-		// Initialize Action Scheduler if it's available and we're in a proper WordPress context
-		if ( class_exists( '\ActionScheduler' ) && method_exists( '\ActionScheduler', 'init' ) ) {
-			$plugin_file = plugin_dir_path( __DIR__ ) . 'dio-cron.php';
-			\ActionScheduler::init( $plugin_file );
+		// Check if ActionScheduler_Versions is available (indicating another plugin provides AS)
+		if ( class_exists( '\ActionScheduler_Versions' ) ) {
+			// Let the existing ActionScheduler handle initialization
+			return;
+		}
+
+		// Only load our bundled Action Scheduler if none is available
+		$action_scheduler_path = plugin_dir_path( __DIR__ ) . 'vendor/woocommerce/action-scheduler/action-scheduler.php';
+		if ( file_exists( $action_scheduler_path ) ) {
+			require_once $action_scheduler_path;
+
+			// Initialize Action Scheduler for our plugin
+			if ( class_exists( '\ActionScheduler' ) && method_exists( '\ActionScheduler', 'init' ) ) {
+				$plugin_file = plugin_dir_path( __DIR__ ) . 'dio-cron.php';
+				\ActionScheduler::init( $plugin_file );
+			}
 		}
 	}	/**
 		 * Load required dependencies
