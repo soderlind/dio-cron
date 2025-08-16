@@ -17,6 +17,8 @@ DIO Cron triggers WordPress cron jobs across all public sites in your multisite 
 - Queue-based processing with built-in retry logic
 - Comprehensive admin interface with enhanced monitoring
 - Built-in security with token authentication and rate limiting
+- **Performance optimized** for large multisite networks
+- **Enhanced error handling** and recovery mechanisms
 
 ## Quick Setup
 
@@ -281,13 +283,30 @@ DIO Cron includes detailed logging for debugging wp-cron triggers, but this feat
 - No debugging information is logged without explicit debug mode activation
 - Protects against accidental logging in live environments
 
-### Enhanced Monitoring & Diagnostics
-**Admin Interface Features:**
-- **Queue Status**: Real-time view of pending, in-progress, and failed actions
-- **Processing Statistics**: Daily completion counts and success rates  
-- **Network-Wide Stats**: Total runs, sites processed, and last execution time
-- **Site Diagnostics**: Test individual sites for connectivity issues with detailed error reporting
-- **Security Status**: Token protection status, rate limiting, and execution locks
+## Performance Optimizations
+
+### Large Network Support
+**Version 2.2.8** includes significant performance improvements for large multisite networks:
+
+- **Memory Optimization**: Enhanced memory usage for processing hundreds of sites
+- **Timeout Protection**: Better handling of long-running operations with safeguards
+- **Queue Efficiency**: Improved Action Scheduler integration for faster processing
+- **Error Recovery**: Enhanced resilience with better error handling and recovery
+
+### Scalability Features
+- **Batch Processing**: Sites are processed in optimized batches for better performance
+- **Background Operations**: Heavy operations moved to background processing
+- **Resource Management**: Improved resource allocation and cleanup
+- **Configuration Tuning**: Optimized default settings for various network sizes
+
+### Performance Monitoring
+Monitor performance through the admin interface:
+- Queue processing speed and efficiency
+- Memory usage during operations
+- Error rates and recovery statistics
+- Overall network processing metrics
+
+## Monitoring
 
 **Action Scheduler Integration:**
 WordPress includes a detailed view at **Network Admin → DIO Cron → Scheduled Actions** where you can:

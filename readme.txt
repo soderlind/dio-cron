@@ -3,7 +3,7 @@ Contributors: PerS
 Tags: cron, multisite, wp-cron, action-scheduler, admin-interface, security
 Requires at least: 6.5
 Tested up to: 6.8
-Stable tag: 2.2.7
+Stable tag: 2.2.8
 Requires PHP: 8.2
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -35,7 +35,7 @@ DIO Cron triggers WordPress cron jobs across all public sites in your multisite 
 * **Site Diagnostics**: Test individual sites for connectivity issues with detailed error reporting
 * **Contextual Help System**: Four comprehensive help tabs with troubleshooting guidance
 * **WordPress Standards**: Uses WordPress time constants and proper admin patterns
-* **Production Security**: WP_DEBUG-aware logging system with automatic protection 
+* **Production Security**: WP_DEBUG-aware logging system with automatic protection
 
 
 == Installation ==
@@ -46,7 +46,7 @@ DIO Cron triggers WordPress cron jobs across all public sites in your multisite 
 4. **Generate a security token** in the Security Status panel
 5. Disable WordPress default cron in `wp-config.php`:
    ```php
-   define('DISABLE_WP_CRON', true);
+   define( 'DISABLE_WP_CRON', true );
    ```
 
 = Alternative Installation Methods =
@@ -215,7 +215,77 @@ DIO Cron uses WordPress time constants for better code readability and maintaina
 
 These constants make timing configurations more readable and prevent calculation errors.
 
+== Frequently Asked Questions ==
+
+= How does the plugin work? =
+
+The plugin hooks into a custom endpoint to run the cron job. It adds a rewrite rule and tag for the endpoint `dio-cron`. When this endpoint is accessed with a valid security token, the plugin will run wp-cron on all public sites in the multisite network using Action Scheduler for queue-based processing.
+
+= Getting 401 Unauthorized? =
+
+Check that you've included `?token=your-token-here` in your URL. Verify the token is correct in **Network Admin → DIO Cron → Security Status** and generate a new token if needed.
+
+= Getting 429 Too Many Requests? =
+
+You're hitting the rate limit (5 requests per 5 minutes). Wait a few minutes and try again, or check if multiple systems are calling the endpoint.
+
+= The /dio-cron endpoint returns 404, what should I do? =
+
+If the endpoint is not working:
+1. Go to **Network Admin → DIO Cron** and click "Fix Permalinks"
+2. Alternatively, visit **Settings → Permalinks** and click "Save Changes" 
+3. Ensure your `.htaccess` file is writable and contains WordPress rewrite rules
+
+The "Fix Permalinks" button performs a complete rewrite rules regeneration for maximum effectiveness.
+
+= Getting 409 Conflict? =
+
+Another cron job is already running. Wait up to 5 minutes for it to complete or check **Tools → Scheduled Actions** for stuck jobs.
+
+= How do I monitor the plugin's performance? =
+
+Use the comprehensive Network Admin interface at **Network Admin → DIO Cron** to view:
+- Real-time queue status (pending, in-progress, failed actions)
+- Processing statistics with success rates and daily metrics
+- Network-wide statistics (total runs, sites processed, last execution)
+- Individual site diagnostic testing with detailed error reporting
+
+You can also monitor detailed action history at **Network Admin → DIO Cron → Scheduled Actions** (filter by group: `dio-cron`) for complete job logs and performance analysis.
+
+= How do I enable detailed debugging? =
+
+DIO Cron includes detailed logging for debugging wp-cron triggers, but this feature is only available when `WP_DEBUG` is enabled for security.
+
+**Enable Debug Logging:**
+1. Add to your `wp-config.php`:
+   ```php
+   define('WP_DEBUG', true);
+   define('WP_DEBUG_LOG', true);
+   ```
+2. Go to **Network Admin → DIO Cron**
+3. Use the "Enable Detailed Logging" button in Quick Actions
+4. Check `/wp-content/debug.log` for detailed request logs
+
+**Security Note:**
+- Logging controls are automatically hidden in production (`WP_DEBUG = false`)
+- No debugging information is logged without explicit debug mode activation
+- Protects against accidental logging in live environments
+
+== Screenshots ==
+
+1. No screenshots available.
+
 == Changelog ==
+
+= 2.2.8 =
+* **Performance Optimizations**: Enhanced performance for large multisite networks with improved memory usage
+* **Code Quality Improvements**: Refactored code for better maintainability and reliability
+* **Timeout Protection**: Better handling of long-running operations with enhanced safeguards
+* **Enhanced Error Handling**: Improved error recovery and resilience for better user experience
+* **Security Enhancements**: Strengthened security measures and validation throughout the plugin
+* **Configuration Optimization**: Improved default settings for better out-of-box experience
+* **Debugging Support**: Enhanced debugging capabilities and error reporting for troubleshooting
+* **Admin Interface Refinements**: Refined admin interface for improved usability and responsiveness
 
 = 2.2.7 =
 * **Admin Interface Streamlining**: Removed confusing recurring job UI elements that didn't align with external trigger architecture
@@ -350,8 +420,6 @@ These constants make timing configurations more readable and prevent calculation
 
 = 1.0.1 =
 * Initial release.
-
-
 
 == Frequently Asked Questions ==
 

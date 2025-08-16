@@ -3,7 +3,7 @@
         'name' => 'soderlind/dio-cron',
         'pretty_version' => 'dev-main',
         'version' => 'dev-main',
-        'reference' => '7376d934d1efd55af35a5a587c673690ba445d74',
+        'reference' => '2f116ece7cf803b0a007d3e893f7441bc89cff48',
         'type' => 'wordpress-plugin',
         'install_path' => __DIR__ . '/../../',
         'aliases' => array(),
@@ -13,7 +13,7 @@
         'soderlind/dio-cron' => array(
             'pretty_version' => 'dev-main',
             'version' => 'dev-main',
-            'reference' => '7376d934d1efd55af35a5a587c673690ba445d74',
+            'reference' => '2f116ece7cf803b0a007d3e893f7441bc89cff48',
             'type' => 'wordpress-plugin',
             'install_path' => __DIR__ . '/../../',
             'aliases' => array(),

@@ -21,7 +21,7 @@ class DIO_Cron {
 	 *
 	 * @var string VERSION Plugin version
 	 */
-	const VERSION = '2.2.7';    /**
+	const VERSION = '2.2.8';    /**
 			* Instance of the queue manager
 			*
 			* @var DIO_Cron_Queue_Manager
@@ -95,12 +95,12 @@ class DIO_Cron {
 	 */
 	private function init_action_scheduler() {
 		// Load Action Scheduler if not already loaded.
-		if ( ! class_exists( 'ActionScheduler' ) ) {
+		if ( ! class_exists( '\ActionScheduler' ) ) {
 			require_once plugin_dir_path( __DIR__ ) . 'vendor/woocommerce/action-scheduler/action-scheduler.php';
 		}
 
 		// Initialize Action Scheduler.
-		if ( class_exists( 'ActionScheduler' ) && ! did_action( 'action_scheduler_init' ) ) {
+		if ( class_exists( '\ActionScheduler' ) && ! did_action( 'action_scheduler_init' ) ) {
 			do_action( 'action_scheduler_init' );
 		}
 	}
@@ -358,8 +358,8 @@ class DIO_Cron {
 	 */
 	public static function activate() {
 		// Initialize Action Scheduler tables.
-		if ( class_exists( 'ActionScheduler' ) ) {
-			ActionScheduler::init();
+		if ( class_exists( '\ActionScheduler' ) ) {
+			\ActionScheduler::init();
 		}
 
 		// Initialize rewrite rules.
