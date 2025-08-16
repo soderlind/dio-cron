@@ -3,7 +3,7 @@ Contributors: PerS
 Tags: cron, multisite, wp-cron, action-scheduler, admin-interface, security
 Requires at least: 6.5
 Tested up to: 6.8
-Stable tag: 2.2.8
+Stable tag: 2.2.9
 Requires PHP: 8.2
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -276,6 +276,15 @@ DIO Cron includes detailed logging for debugging wp-cron triggers, but this feat
 1. No screenshots available.
 
 == Changelog ==
+
+= 2.2.9 =
+* **Critical Bug Fix**: Fixed ActionScheduler::init() fatal error by adding required file path parameter during plugin activation
+* **Code Quality Audit**: Comprehensive review of all function calls to prevent similar argument count errors
+* **Error Prevention**: Enhanced defensive programming with proper parameter validation throughout codebase
+* **Reliability Enhancement**: Improved Action Scheduler integration stability and error handling
+* **Git Conflict Resolution**: Successfully merged fix/cluster branch changes while maintaining 2.2.8 feature set
+* **Branch Management**: Clean repository state with all conflicts resolved and version consistency achieved
+* **Quality Assurance**: Systematic code audit confirmed no similar function call errors exist in codebase
 
 = 2.2.8 =
 * **Performance Optimizations**: Enhanced performance for large multisite networks with improved memory usage

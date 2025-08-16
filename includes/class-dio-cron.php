@@ -21,7 +21,7 @@ class DIO_Cron {
 	 *
 	 * @var string VERSION Plugin version
 	 */
-	const VERSION = '2.2.8';    /**
+	const VERSION = '2.2.9';    /**
 			* Instance of the queue manager
 			*
 			* @var DIO_Cron_Queue_Manager
@@ -359,7 +359,8 @@ class DIO_Cron {
 	public static function activate() {
 		// Initialize Action Scheduler tables.
 		if ( class_exists( '\ActionScheduler' ) ) {
-			\ActionScheduler::init();
+			$action_scheduler_file = plugin_dir_path( __DIR__ ) . 'vendor/woocommerce/action-scheduler/action-scheduler.php';
+			\ActionScheduler::init( $action_scheduler_file );
 		}
 
 		// Initialize rewrite rules.
