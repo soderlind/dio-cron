@@ -286,12 +286,15 @@ DIO Cron includes detailed logging for debugging wp-cron triggers, but this feat
 ## Performance Optimizations
 
 ### Large Network Support
-**Version 2.2.8** includes significant performance improvements for large multisite networks:
+**Version 2.2.9** includes critical bug fixes and reliability improvements:
 
-- **Memory Optimization**: Enhanced memory usage for processing hundreds of sites
-- **Timeout Protection**: Better handling of long-running operations with safeguards
-- **Queue Efficiency**: Improved Action Scheduler integration for faster processing
-- **Error Recovery**: Enhanced resilience with better error handling and recovery
+- **Critical Bug Fix**: Fixed ActionScheduler::init() fatal error during plugin activation
+- **Error Prevention**: Comprehensive code audit to prevent similar function call issues
+- **Enhanced Reliability**: Improved Action Scheduler integration stability
+- **Memory Optimization**: Enhanced memory usage for processing hundreds of sites (from 2.2.8)
+- **Timeout Protection**: Better handling of long-running operations with safeguards (from 2.2.8)
+- **Queue Efficiency**: Improved Action Scheduler integration for faster processing (from 2.2.8)
+- **Error Recovery**: Enhanced resilience with better error handling and recovery (from 2.2.8)
 
 ### Scalability Features
 - **Batch Processing**: Sites are processed in optimized batches for better performance
