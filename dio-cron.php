@@ -1,19 +1,9 @@
 <?php
-/** * Plugin Name: DIO Cron
- * Plugin URI:  https://github.com/soderlind/dio-cron
- * Description: Run wp-cron on all public sites in a multisite network with Action Scheduler integration, security token authentication, and comprehensive network admin interface.
- * Version: 2.2.5
- * Author: Per SoderlindIO Cron
- *
- * @package     DIO_Cron
- * @author      Per Soderlind
- * @copyright   2024 Per Soderlind
- * @license     GPL-2.0+
- *
+/**
  * Plugin Name: DIO Cron
  * Plugin URI: https://github.com/soderlind/dio-cron
  * Description: Run wp-cron on all public sites in a multisite network with Action Scheduler integration, security token authentication, and comprehensive network admin interface.
- * Version: 2.2.4
+ * Version: 2.2.8
  * Author: Per Soderlind
  * Author URI: https://soderlind.no
  * License: GPL-2.0+
@@ -21,6 +11,11 @@
  * Network: true
  * GitHub Plugin URI: soderlind/dio-cron
  * Primary Branch: main
+ *
+ * @package     DIO_Cron
+ * @author      Per Soderlind
+ * @copyright   2024 Per Soderlind
+ * @license     GPL-2.0+
  */
 
 namespace Soderlind\Multisite\Cron;
@@ -33,11 +28,6 @@ if ( ! defined( 'ABSPATH' ) ) {
 // Load Composer autoloader.
 if ( file_exists( __DIR__ . '/vendor/autoload.php' ) ) {
 	require_once __DIR__ . '/vendor/autoload.php';
-}
-
-// Initialize Action Scheduler if available.
-if ( file_exists( __DIR__ . '/vendor/woocommerce/action-scheduler/action-scheduler.php' ) ) {
-	require_once __DIR__ . '/vendor/woocommerce/action-scheduler/action-scheduler.php';
 }
 
 // Include the generic updater class.
@@ -53,13 +43,20 @@ $dio_cron_updater = \Soderlind\WordPress\GitHub_Plugin_Updater::create_with_asse
 	'main'
 );
 
-
 // Load the main plugin class.
 require_once plugin_dir_path( __FILE__ ) . 'includes/class-dio-cron.php';
 
 // Flush rewrite rules on plugin activation and deactivation.
 register_activation_hook( __FILE__, [ DIO_Cron::class, 'activate' ] );
 register_deactivation_hook( __FILE__, [ DIO_Cron::class, 'deactivate' ] );
+
+// Initialize Action Scheduler early on plugins_loaded.
+add_action( 'plugins_loaded', function () {
+	$action_scheduler_path = __DIR__ . '/vendor/woocommerce/action-scheduler/action-scheduler.php';
+	if ( file_exists( $action_scheduler_path ) ) {
+		require_once $action_scheduler_path;
+	}
+}, 0 );
 
 // Initialize the plugin.
 add_action(
@@ -98,15 +95,15 @@ if ( ! function_exists( __NAMESPACE__ . '\dio_run_cron_on_all_sites' ) ) {
 		$result         = $site_processor->process_sites_batch( $sites );
 
 		// Convert the result format to match legacy expectations.
-		if ( $result['success'] ) {
-			return [
+		if ( $result[ 'success' ] ) {
+			return [ 
 				'success'        => true,
 				'message'        => '',
-				'count'          => $result['processed'],
-				'execution_time' => $result['execution_time'],
+				'count'          => $result[ 'processed' ],
+				'execution_time' => $result[ 'execution_time' ],
 			];
 		} else {
-			return create_error_response( $result['message'] );
+			return create_error_response( $result[ 'message' ] );
 		}
 	}
 }

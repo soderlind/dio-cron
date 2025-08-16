@@ -9,13 +9,16 @@ Run cron jobs on all sites in a WordPress multisite network. Uses **Action Sched
 
 ## What It Does
 
-DIO Cron triggers WordPress cron jobs across all public sites in your multisite network. Instead of each site running its own cron independently, this plugin coordinates everything from one place.
+DIO Cron triggers WordPress cron jobs across all public sites in your multisite network through external endpoints. Instead of each site running its own cron independently, this plugin coordinates everything from one place using Action Scheduler for reliable queue-based processing.
 
 **Key Benefits:**
 - No race conditions or overlapping cron jobs
-- Better performance with queue-based processing
-- Built-in retry logic for failed sites
-- Easy monitoring and management
+- External trigger architecture for better reliability
+- Queue-based processing with built-in retry logic
+- Comprehensive admin interface with enhanced monitoring
+- Built-in security with token authentication and rate limiting
+- **Performance optimized** for large multisite networks
+- **Enhanced error handling** and recovery mechanisms
 
 ## Quick Setup
 
@@ -261,6 +264,29 @@ DIO Cron includes detailed logging for debugging wp-cron triggers, but this feat
 - Logging controls are automatically hidden in production (`WP_DEBUG = false`)
 - No debugging information is logged without explicit debug mode activation
 - Protects against accidental logging in live environments
+
+## Performance Optimizations
+
+### Large Network Support
+**Version 2.2.8** includes significant performance improvements for large multisite networks:
+
+- **Memory Optimization**: Enhanced memory usage for processing hundreds of sites
+- **Timeout Protection**: Better handling of long-running operations with safeguards
+- **Queue Efficiency**: Improved Action Scheduler integration for faster processing
+- **Error Recovery**: Enhanced resilience with better error handling and recovery
+
+### Scalability Features
+- **Batch Processing**: Sites are processed in optimized batches for better performance
+- **Background Operations**: Heavy operations moved to background processing
+- **Resource Management**: Improved resource allocation and cleanup
+- **Configuration Tuning**: Optimized default settings for various network sizes
+
+### Performance Monitoring
+Monitor performance through the admin interface:
+- Queue processing speed and efficiency
+- Memory usage during operations
+- Error rates and recovery statistics
+- Overall network processing metrics
 
 ## Monitoring
 
