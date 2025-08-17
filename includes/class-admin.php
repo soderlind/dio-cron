@@ -112,8 +112,8 @@ class DIO_Cron_Admin {
 	 * @return void
 	 */
 	public function add_action_scheduler_network_submenu() {
-		if ( class_exists( '\ActionScheduler_AdminView' ) ) {
-			add_submenu_page(
+		if ( class_exists( '\\ActionScheduler_AdminView' ) ) {
+			$hook = add_submenu_page(
 				'dio-cron-status',
 				esc_html__( 'Scheduled Actions', 'dio-cron' ),
 				esc_html__( 'Scheduled Actions', 'dio-cron' ),
@@ -121,7 +121,40 @@ class DIO_Cron_Admin {
 				'action-scheduler',
 				[ $this, 'render_action_scheduler_page' ]
 			);
+
+			// Redirect early on load to the native Action Scheduler page to avoid header issues during searches.
+			if ( $hook ) {
+				add_action( 'load-' . $hook, [ $this, 'redirect_to_action_scheduler' ] );
+			}
 		}
+	}
+
+	/**
+	 * Early redirect to the native Action Scheduler admin page.
+	 *
+	 * This prevents rendering the Action Scheduler UI inside our submenu callback after
+	 * admin output has begun, which can trigger "headers already sent" warnings when
+	 * the AS UI performs redirects (e.g., during search/filter actions).
+	 *
+	 * @return void
+	 */
+	public function redirect_to_action_scheduler() {
+		if ( ! current_user_can( 'manage_network_options' ) ) {
+			return;
+		}
+
+		// Preserve existing query args (except our page slug) when redirecting.
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Safe redirect of view-only params
+		$params = $_GET ?? [];
+		unset( $params[ 'page' ] );
+
+		$target = admin_url( 'tools.php?page=action-scheduler' );
+		if ( ! empty( $params ) && is_array( $params ) ) {
+			$target = add_query_arg( array_map( 'wp_unslash', $params ), $target );
+		}
+
+		wp_safe_redirect( $target );
+		exit;
 	}
 
 	/**
@@ -130,12 +163,10 @@ class DIO_Cron_Admin {
 	 * @return void
 	 */
 	public function render_action_scheduler_page() {
-		if ( class_exists( '\ActionScheduler_AdminView' ) ) {
-			$admin_view = \ActionScheduler_AdminView::instance();
-			if ( method_exists( $admin_view, 'render_admin_ui' ) ) {
-				$admin_view->render_admin_ui();
-			}
-		}
+		// Fallback content in case early redirect didn't occur.
+		echo '<div class="wrap"><h1>' . esc_html__( 'Scheduled Actions', 'dio-cron' ) . '</h1>';
+		$as_url = esc_url( admin_url( 'tools.php?page=action-scheduler' ) );
+		echo '<p><a class="button button-primary" href="' . $as_url . '">' . esc_html__( 'Open Scheduled Actions', 'dio-cron' ) . '</a></p></div>';
 	}
 
 	/**
@@ -296,7 +327,7 @@ class DIO_Cron_Admin {
 					}
 
 					if ( $site ) {
-						$result = $site_processor->trigger_site_cron( $site_url );
+						$result = $site_processor->trigger_site_cron( $site_url, true ); // Use admin context
 						if ( is_wp_error( $result ) ) {
 							$this->add_admin_notice(
 								'error',
@@ -331,24 +362,101 @@ class DIO_Cron_Admin {
 			case 'force_process_queue':
 				// Manually trigger queue processing.
 				if ( DIO_Cron_Utilities::is_action_scheduler_available() ) {
-					// Get pending actions.
+					// Get pending actions - process more than just 5 for production use
 					$pending_actions = as_get_scheduled_actions(
 						[ 
-							'hook'     => 'dio_cron_process_site',
+							'hook'     => DIO_Cron_Utilities::PROCESS_SITE_HOOK,
 							'status'   => 'pending',
-							'per_page' => 5, // Process just a few for testing.
+							'per_page' => 50, // Process up to 50 actions at once
 						]
 					);
 
 					if ( ! empty( $pending_actions ) ) {
 						$processed = 0;
+						$errors    = 0;
+
 						foreach ( $pending_actions as $action ) {
-							// Trigger the action manually.
-							do_action( 'dio_cron_process_site', $action->get_args()[ 0 ] ?? '' );
-							++$processed;
+							try {
+								// Get the site ID from action args and validate it
+								$args = $action->get_args();
+
+								// Debug: Log what we're getting
+								if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
+									error_log( 'DIO Cron Force Process: Args: ' . print_r( $args, true ) );
+								}
+
+								// Handle both array formats: indexed and associative
+								if ( isset( $args[ 0 ] ) ) {
+									// New format: [site_id, site_url]
+									$site_id  = (int) $args[ 0 ];
+									$site_url = isset( $args[ 1 ] ) ? (string) $args[ 1 ] : '';
+								} elseif ( isset( $args[ 'site_id' ] ) ) {
+									// Old format: ['site_id' => 123, 'site_url' => 'url']
+									$site_id  = (int) $args[ 'site_id' ];
+									$site_url = isset( $args[ 'site_url' ] ) ? (string) $args[ 'site_url' ] : '';
+								} else {
+									// Invalid format
+									$site_id  = 0;
+									$site_url = '';
+								}
+
+								// Only process if we have a valid site ID
+								if ( $site_id > 0 ) {
+									// Use site processor directly for better error handling in admin context
+									$plugin         = DIO_Cron::get_instance();
+									$site_processor = $plugin->get_site_processor();
+
+									// Test connectivity with shorter timeout for admin context
+									$test_site_url = $site_url ?: get_site( $site_id )->siteurl;
+									$test_result   = $site_processor->trigger_site_cron( $test_site_url, true );
+
+									if ( is_wp_error( $test_result ) ) {
+										++$errors;
+										if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
+											error_log( 'DIO Cron Force Process: Site ' . $site_id . ' failed - ' . $test_result->get_error_message() );
+										}
+									} else {
+										++$processed;
+										if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
+											error_log( 'DIO Cron Force Process: Successfully triggered site_id ' . $site_id );
+										}
+									}
+								} else {
+									++$errors;
+									if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
+										error_log( 'DIO Cron Force Process: Skipped action with invalid site_id. Args: ' . print_r( $args, true ) );
+									}
+								}
+							} catch (Exception $e) {
+								++$errors;
+								if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
+									error_log( 'DIO Cron Force Process Error: ' . $e->getMessage() );
+								}
+							} catch (Throwable $e) {
+								// Catch any PHP errors or fatal errors
+								++$errors;
+								if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
+									error_log( 'DIO Cron Force Process Fatal Error: ' . $e->getMessage() );
+								}
+							}
 						}
-						/* translators: %d: Number of actions processed */
-						$this->add_admin_notice( 'success', sprintf( esc_html__( 'Manually processed %d pending actions', 'dio-cron' ), $processed ) );
+
+						if ( $processed > 0 ) {
+							/* translators: %d: Number of actions processed */
+							$message = sprintf( esc_html__( 'Manually triggered %d pending actions (they will be marked complete by Action Scheduler)', 'dio-cron' ), $processed );
+							if ( $errors > 0 ) {
+								/* translators: %1$d: Number of actions processed, %2$d: Number of errors */
+								$message = sprintf( esc_html__( 'Manually triggered %1$d pending actions (%2$d errors)', 'dio-cron' ), $processed, $errors );
+							}
+							$this->add_admin_notice( 'success', $message );
+						} else {
+							$message = esc_html__( 'No valid actions could be triggered', 'dio-cron' );
+							if ( $errors > 0 ) {
+								/* translators: %d: Number of errors */
+								$message = sprintf( esc_html__( 'No valid actions could be triggered (%d errors)', 'dio-cron' ), $errors );
+							}
+							$this->add_admin_notice( 'warning', $message );
+						}
 					} else {
 						$this->add_admin_notice( 'info', esc_html__( 'No pending actions found to process', 'dio-cron' ) );
 					}
@@ -460,8 +568,8 @@ class DIO_Cron_Admin {
 					</p>
 					<p>
 						<code style="background: #f1f1f1; padding: 4px 8px; font-family: 'Courier New', monospace;">
-																																																																																																																									define( 'DISABLE_WP_CRON', true );
-																																																																																																																								</code>
+																																																																																																																																																	define( 'DISABLE_WP_CRON', true );
+																																																																																																																																																</code>
 					</p>
 					<p>
 						<strong><?php esc_html_e( 'Important:', 'dio-cron' ); ?></strong>
@@ -529,8 +637,8 @@ class DIO_Cron_Admin {
 									<td><?php echo intval( $network_stats[ 'total_runs' ] ); ?></td>
 								</tr>
 								<tr>
-									<td><strong><?php esc_html_e( 'Total Sites Processed', 'dio-cron' ); ?></strong></td>
-									<td><?php echo intval( $network_stats[ 'total_sites_processed' ] ); ?></td>
+									<td><strong><?php esc_html_e( 'Sites Processed (Last Run)', 'dio-cron' ); ?></strong></td>
+									<td><?php echo intval( $network_stats[ 'sites_processed_last_run' ] ?? 0 ); ?></td>
 								</tr>
 								<tr>
 									<td><strong><?php esc_html_e( 'Last Run', 'dio-cron' ); ?></strong></td>
@@ -577,8 +685,7 @@ class DIO_Cron_Admin {
 									title="<?php esc_html_e( 'Manually process pending queue items for testing', 'dio-cron' ); ?>">
 							</form>
 
-							<a href="<?php echo esc_url( network_admin_url( 'admin.php?page=action-scheduler' ) ); ?>"
-								class="button">
+							<a href="<?php echo esc_url( admin_url( 'tools.php?page=action-scheduler' ) ); ?>" class="button">
 								<?php esc_html_e( 'View Action Scheduler', 'dio-cron' ); ?>
 							</a>
 
@@ -676,8 +783,8 @@ class DIO_Cron_Admin {
 							</a>
 						<?php else : ?>
 							<code class="dio-cron-disabled-endpoint">
-																																																																																																		<?php echo esc_url( home_url( '/dio-cron?token=YOUR_TOKEN_HERE' ) ); ?>
-																																																																																																	</code>
+																																																																																																																										<?php echo esc_url( home_url( '/dio-cron?token=YOUR_TOKEN_HERE' ) ); ?>
+																																																																																																																									</code>
 						<?php endif; ?>
 
 						<p><strong><?php esc_html_e( 'Legacy Mode:', 'dio-cron' ); ?></strong></p>
@@ -688,8 +795,8 @@ class DIO_Cron_Admin {
 							</a>
 						<?php else : ?>
 							<code class="dio-cron-disabled-endpoint">
-																																																																																																		<?php echo esc_url( home_url( '/dio-cron?immediate=1&token=YOUR_TOKEN_HERE' ) ); ?>
-																																																																																																	</code>
+																																																																																																																										<?php echo esc_url( home_url( '/dio-cron?immediate=1&token=YOUR_TOKEN_HERE' ) ); ?>
+																																																																																																																									</code>
 						<?php endif; ?>
 
 						<p><strong><?php esc_html_e( 'GitHub Actions:', 'dio-cron' ); ?></strong></p>
@@ -700,8 +807,8 @@ class DIO_Cron_Admin {
 							</a>
 						<?php else : ?>
 							<code class="dio-cron-disabled-endpoint">
-																																																																																																		<?php echo esc_url( home_url( '/dio-cron?ga&token=YOUR_TOKEN_HERE' ) ); ?>
-																																																																																																	</code>
+																																																																																																																										<?php echo esc_url( home_url( '/dio-cron?ga&token=YOUR_TOKEN_HERE' ) ); ?>
+																																																																																																																									</code>
 						<?php endif; ?>
 					</div>
 				</div>
@@ -999,7 +1106,7 @@ class DIO_Cron_Admin {
 		// Help sidebar with quick links.
 		$screen->set_help_sidebar(
 			'<p><strong>' . esc_html__( 'Quick Links', 'dio-cron' ) . '</strong></p>' .
-			'<p><a href="' . esc_url( network_admin_url( 'admin.php?page=action-scheduler' ) ) . '">' . esc_html__( 'View Action Scheduler', 'dio-cron' ) . '</a></p>' .
+			'<p><a href="' . esc_url( admin_url( 'tools.php?page=action-scheduler' ) ) . '">' . esc_html__( 'View Action Scheduler', 'dio-cron' ) . '</a></p>' .
 			'<p><a href="#">' . esc_html__( 'Security Status section', 'dio-cron' ) . '</a></p>'
 		);
 	}

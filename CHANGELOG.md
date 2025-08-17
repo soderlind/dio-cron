@@ -1,5 +1,120 @@
 ## ⚙️ Changelog
 
+### 2.2.20 - Scheduled Actions Redirect and Permission Fixes
+
+#### 🐛 Bug Fixes
+- **Header Warnings Resolved**: Removed embedded Action Scheduler UI from our submenu and added an early redirect to the native Scheduled Actions page before any output to prevent "Cannot modify header information - headers already sent" warnings when searching or filtering.
+- **Correct Menu Location**: Updated all references from `admin.php?page=action-scheduler` to `tools.php?page=action-scheduler` to match Action Scheduler's Tools submenu location and fix the "Sorry, you are not allowed to access this page." permission error.
+
+
+### 2.2.19 - Safer HTTP, Accurate Stats, and Queue Improvements
+
+🔐 Security & Reliability: Safer default HTTP requests, robust URL validation, and correct UTC handling for stats.
+
+#### ✨ Improvements
+- **Default SSL Verification**: HTTP requests to sub-site cron now verify SSL by default for security. New filter `dio_cron_sslverify` allows opting out for local/self-signed setups.
+- **URL Validation**: Validate cron URL early and return clear error if invalid.
+- **Accurate Daily Stats**: Fixed timezone mismatch by converting local “today” boundaries to UTC when querying `*_gmt` columns.
+- **Queue Counts**: More reliable queue counts using Action Scheduler with `'return' => 'ids'` and high `per_page` to avoid undercounting.
+- **Filterable Recurrence**: New `dio_cron_recurring_frequency` filter to adjust recurring schedule cadence.
+
+#### 🔧 Internal
+- **Date Extraction**: Simplified Action Scheduler date extraction to supported APIs, removing fragile `get_id()`/store-based paths.
+- **Safer Logging**: Strip tags from non-2xx response body snippets in logs.
+
+### 2.2.18 - Adjusted Admin Timeout for Better Reliability
+
+🔧 **Timeout Optimization**: Increased admin context timeout to reduce cURL timeout errors
+
+#### 🔧 Bug Fixes
+- **Timeout Adjustment**: Increased admin context timeout from 5 seconds to 10 seconds to reduce cURL error 28 occurrences
+- **Configurable Timeouts**: Added `dio_cron_admin_timeout` filter for customizing admin operation timeouts
+- **Better Balance**: Maintained faster admin response while allowing sufficient time for site responses
+
+#### ⚡ Performance Improvements
+- **Reduced Timeouts**: 10-second admin timeout is still faster than 15-second background processing
+- **Customizable**: Developers can adjust timeout via filter: `add_filter('dio_cron_admin_timeout', function($timeout) { return 15; });`
+- **Flexible Configuration**: Timeout can be adjusted per site URL or admin context as needed
+
+### 2.2.17 - Enhanced Timeout Protection and Error Handling
+
+🛡️ **Resilience Improvements**: Better handling of timeouts and network issues in force processing
+
+#### 🔧 Bug Fixes
+- **Timeout Protection**: Fixed uncaught exceptions when sites timeout during force processing
+- **Admin Context Optimization**: Added 5-second timeout for admin operations vs 15s for background processing
+- **Exception Handling**: Enhanced to catch both Exception and Throwable types for complete error coverage
+- **Process Isolation**: Force processing now continues even if individual sites fail, providing comprehensive reporting
+
+#### ⚡ Performance Improvements
+- **Direct Processing**: Replaced synchronous `do_action` calls with direct site processor usage for better control
+- **Error Resilience**: One failing site no longer breaks entire force processing operation
+- **Optimized Timeouts**: Shorter timeouts in admin context improve user experience while maintaining reliability
+
+#### 🔍 Debugging
+- **Enhanced Logging**: Improved logging for timeout scenarios and admin context operations
+- **Better Error Messages**: More informative error reporting for failed site processing
+
+### 2.2.16 - Fixed Action Scheduler get_id() Method Error
+
+🐛 **Critical Fix**: Resolved "Call to undefined method ActionScheduler_Action::get_id()" fatal error
+
+#### 🔧 Bug Fixes
+- **Method Error**: Removed invalid call to non-existent `ActionScheduler_Action::get_id()` method
+- **Simplified Processing**: Streamlined force process queue to use direct action triggering
+- **Better Messaging**: Updated admin messages to clarify that actions are triggered manually but marked complete by Action Scheduler
+- **Debug Logging**: Enhanced debug logging to track successful processing without relying on action IDs
+
+#### 🛡️ Improved Reliability
+- **Error Prevention**: Eliminated dependency on non-standard Action Scheduler methods
+- **Simplified Logic**: Reduced complexity by focusing on action triggering rather than manual completion
+- **Exception Handling**: Maintained robust error handling while simplifying the processing flow
+- **User Feedback**: Clearer admin messages about what the force processing actually does
+
+### 2.2.15 - Enhanced Force Process Queue Functionality
+
+🔧 **Major Improvement**: Fixed and enhanced the "Force Process Queue" feature in admin interface
+
+#### 🚀 Enhanced Force Processing
+- **Increased Capacity**: Process up to 50 pending actions at once (was limited to 5)
+- **Action Completion**: Properly mark actions as complete in Action Scheduler after processing
+- **Dual Format Support**: Handle both old associative array format and new indexed array format for arguments
+- **Error Tracking**: Count and report processing errors with detailed feedback
+
+#### 🛡️ Robust Error Handling
+- **Exception Handling**: Wrapped processing in try-catch blocks to prevent crashes
+- **Debug Logging**: Added comprehensive debug logging when WP_DEBUG is enabled
+- **Argument Validation**: Enhanced validation for both site_id and site_url parameters
+- **Graceful Degradation**: Skip invalid actions instead of failing completely
+
+#### 📊 Improved Admin Feedback
+- **Detailed Messages**: Show number of actions processed and errors encountered
+- **Debug Information**: Log action IDs, arguments, and processing status for troubleshooting
+- **Better UX**: Clear success/warning/error messages based on processing results
+- **Progress Tracking**: Real-time feedback on processing progress and issues
+
+#### 🎯 Production Ready
+- **Backward Compatibility**: Support both old and new Action Scheduler argument formats
+- **Performance Optimized**: Process larger batches efficiently without timeouts
+- **Reliable Cleanup**: Ensure processed actions are properly removed from queue
+- **Comprehensive Testing**: Enhanced error detection and reporting for troubleshooting
+
+### 2.2.14 - Critical Type Safety Bug Fix
+
+🐛 **Critical Fix**: Resolved fatal error with Action Scheduler argument type mismatch
+
+#### 🔧 Bug Fixes
+- **Type Safety**: Fixed fatal error where string was passed to `process_single_site()` method expecting integer
+- **Admin Interface**: Fixed manual action processing in network admin to properly validate and cast site IDs to integers
+- **Queue Manager**: Corrected Action Scheduler argument structure to pass ordered array instead of associative array
+- **Error Prevention**: Added proper type validation for site IDs before processing actions
+
+#### 🛡️ Technical Improvements
+- **Parameter Validation**: Enhanced argument validation in admin action processing
+- **Type Casting**: Proper integer casting for site IDs from Action Scheduler arguments
+- **Error Handling**: Skip processing for invalid or missing site IDs to prevent crashes
+- **Code Robustness**: Improved error resistance in multi-site processing workflows
+
 ### 2.2.13 - Namespace Refactoring
 
 🏗️ **Code Organization**: Updated namespace from `Soderlind\Multisite\Cron` to `Soderlind\Multisite\DioCron`

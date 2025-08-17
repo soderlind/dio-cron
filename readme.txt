@@ -3,7 +3,7 @@ Contributors: PerS
 Tags: cron, multisite, wp-cron, action-scheduler, admin-interface, security
 Requires at least: 6.5
 Tested up to: 6.8
-Stable tag: 2.2.13
+Stable tag: 2.2.20
 Requires PHP: 8.2
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -178,6 +178,17 @@ add_filter('dio_cron_request_timeout', function($seconds) {
 });
 ```
 
+Enable/disable SSL certificate verification for HTTP requests (default: true):
+```php
+add_filter('dio_cron_sslverify', function($verify, $site_url) {
+  // Example: disable only for local dev domains
+  if (strpos($site_url, '.local') !== false) {
+    return false;
+  }
+  return $verify;
+}, 10, 2);
+```
+
 Adjust cache duration (using WordPress time constants):
 ```php
 add_filter('dio_cron_sites_transient', function($duration) {
@@ -200,6 +211,13 @@ Customize Action Scheduler batch size:
 ```php
 add_filter('dio_cron_batch_size', function($size) {
     return 50; // Process 50 sites per batch instead of 25
+});
+```
+
+Adjust recurring schedule frequency (seconds) if you use the built-in recurring job:
+```php
+add_filter('dio_cron_recurring_frequency', function($seconds) {
+  return 15 * MINUTE_IN_SECONDS; // run every 15 minutes
 });
 ```
 
@@ -276,6 +294,59 @@ DIO Cron includes detailed logging for debugging wp-cron triggers, but this feat
 1. No screenshots available.
 
 == Changelog ==
+
+= 2.2.20 =
+* Fix: Prevented "Cannot modify header information - headers already sent" warnings by removing embedded Action Scheduler UI and adding an early redirect to the native page before any output.
+* Fix: Updated all admin links to Action Scheduler from `admin.php?page=action-scheduler` to `tools.php?page=action-scheduler` to resolve the "Sorry, you are not allowed to access this page." permission error.
+
+= 2.2.19 =
+* **Security & Reliability**: SSL verification enabled by default for HTTP requests, with `dio_cron_sslverify` filter to override
+* **URL Validation**: Early validation of cron URL with clear errors for invalid URLs
+* **Accurate Daily Stats**: Fixed timezone mismatch by converting local day boundaries to UTC for Action Scheduler `*_gmt` queries
+* **Queue Counts**: More accurate pending/in-progress counts using `'return' => 'ids'` and high `per_page`
+* **Scheduling Flexibility**: New `dio_cron_recurring_frequency` filter to adjust recurring job cadence
+* **Internals**: Simplified Action Scheduler date extraction and safer logging of non-2xx response bodies
+
+= 2.2.18 =
+* **Timeout Optimization**: Increased admin context timeout from 5 to 10 seconds to reduce cURL timeout errors
+* **Configurable Timeouts**: Added `dio_cron_admin_timeout` filter for customizing admin operation timeouts
+* **Better Balance**: Maintained faster admin response while allowing sufficient time for site responses
+* **Flexible Configuration**: Developers can adjust timeout per site URL or admin context as needed
+
+= 2.2.17 =
+* **Timeout Protection**: Enhanced force processing to handle site timeouts gracefully without breaking entire operation
+* **Admin Context Optimization**: Reduced timeout to 5 seconds for admin operations (vs 15s for background processing) for better UX
+* **Exception Handling**: Comprehensive error handling catches both Exception and Throwable types for complete coverage
+* **Process Isolation**: Force processing continues even if individual sites fail, providing detailed error reporting
+* **Direct Processing**: Replaced synchronous do_action calls with direct site processor usage for better error control
+* **Error Resilience**: One failing site no longer breaks entire force processing operation
+* **Enhanced Logging**: Improved debugging information for timeout scenarios and admin context operations
+
+= 2.2.16 =
+* **Critical Bug Fix**: Resolved "Call to undefined method ActionScheduler_Action::get_id()" fatal error in force process queue
+* **Method Compatibility**: Removed invalid call to non-existent ActionScheduler_Action::get_id() method
+* **Simplified Processing**: Streamlined force process queue logic to use reliable direct action triggering
+* **Enhanced Messaging**: Updated admin messages to clarify that actions are triggered manually but completion is handled by Action Scheduler
+* **Debug Improvements**: Better debug logging without dependency on unsupported Action Scheduler methods
+* **Error Prevention**: Eliminated reliance on non-standard Action Scheduler API methods for better compatibility
+
+= 2.2.15 =
+* **Enhanced Force Process Queue**: Fixed "Force Process Queue" to actually process pending actions instead of returning 0
+* **Increased Processing Capacity**: Process up to 50 pending actions at once (previously limited to 5)
+* **Action Completion**: Properly mark actions as complete in Action Scheduler after manual processing
+* **Dual Format Support**: Handle both old associative array and new indexed array formats for Action Scheduler arguments
+* **Enhanced Error Handling**: Added exception handling and detailed error tracking with user feedback
+* **Debug Logging**: Comprehensive debug logging when WP_DEBUG is enabled for troubleshooting
+* **Better Admin Messages**: Show detailed success/warning messages with processing counts and error information
+* **Production Ready**: Reliable batch processing with proper cleanup and backward compatibility
+
+= 2.2.14 =
+* **Critical Bug Fix**: Resolved fatal error where string was passed to process_single_site() method expecting integer
+* **Type Safety**: Fixed Action Scheduler argument type mismatch in site processing
+* **Admin Interface**: Enhanced manual action processing with proper site ID validation and casting
+* **Queue Manager**: Corrected argument structure to pass ordered array for Action Scheduler compatibility
+* **Error Prevention**: Added validation to skip processing invalid site IDs and prevent crashes
+* **Code Robustness**: Improved error resistance in multi-site cron processing workflows
 
 = 2.2.13 =
 * **Namespace Refactoring**: Updated namespace from `Soderlind\Multisite\Cron` to `Soderlind\Multisite\DioCron` for better code organization
