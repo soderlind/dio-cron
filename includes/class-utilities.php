@@ -16,25 +16,127 @@ if ( ! defined( 'ABSPATH' ) ) {
  */
 class DIO_Cron_Utilities {
 	/**
+	 * Common cache keys and groups (DRY)
+	 */
+	private const CACHE_GROUP       = 'dio_cron';
+	private const NETWORK_STATS_KEY = 'dio_cron_network_stats';
+	private const CACHED_SITES_KEY  = 'dio_cron_sites';
+	private const LEGACY_SITES_KEY  = 'dss_cron_sites';
+	private const EXEC_LOCK_KEY     = 'dio_cron_execution_lock';
+	private const LAST_RUN_KEY      = 'dio_cron_last_run';
+
+	/**
+	 * Common filter names and groups (DRY)
+	 */
+	private const FILTER_SITES_LIMIT     = 'dio_cron_number_of_sites';
+	private const FILTER_SITES_TTL       = 'dio_cron_sites_transient';
+	private const FILTER_RL_MAX_REQUESTS = 'dio_cron_rate_limit_max_requests';
+	private const FILTER_RL_TIME_WINDOW  = 'dio_cron_rate_limit_time_window';
+
+	/**
+	 * Action Scheduler group used by this plugin
+	 */
+	private const AS_GROUP = 'dio-cron';
+
+	/**
+	 * Public accessor for the Action Scheduler group slug (DRY across classes)
+	 *
+	 * @return string
+	 */
+	public static function get_action_scheduler_group(): string {
+		return self::AS_GROUP;
+	}
+
+	/**
+	 * Default structure for network stats (single source of truth)
+	 */
+	private static function network_stats_defaults(): array {
+		return [ 
+			'total_runs'               => 0,
+			'last_run'                 => 0,
+			'total_sites_processed'    => 0,
+			'sites_processed_last_run' => 0,
+		];
+	}
+
+	/**
+	 * Site-level cache get helper (uses object cache when available, otherwise site transients)
+	 *
+	 * @param string $key Cache key.
+	 * @param string $group Cache group (object cache only).
+	 * @param mixed  $default Default value on cache miss.
+	 * @return mixed
+	 */
+	private static function site_cache_get( string $key, string $group = self::CACHE_GROUP, $default = false ) {
+		if ( wp_using_ext_object_cache() ) {
+			$val = wp_cache_get( $key, $group );
+			return ( false === $val ) ? $default : $val;
+		}
+		$val = get_site_transient( $key );
+		return ( false === $val ) ? $default : $val;
+	}
+
+	/**
+	 * Site-level cache set helper
+	 *
+	 * @param string $key Cache key.
+	 * @param mixed  $value Value to store.
+	 * @param int    $expiration Expiration in seconds.
+	 * @param string $group Cache group (object cache only).
+	 * @return bool
+	 */
+	private static function site_cache_set( string $key, $value, int $expiration, string $group = self::CACHE_GROUP ): bool {
+		if ( wp_using_ext_object_cache() ) {
+			return (bool) wp_cache_set( $key, $value, $group, $expiration );
+		}
+		return (bool) set_site_transient( $key, $value, $expiration );
+	}
+
+	/**
+	 * Site-level cache delete helper
+	 *
+	 * @param string $key Cache key.
+	 * @param string $group Cache group (object cache only).
+	 * @return bool
+	 */
+	private static function site_cache_delete( string $key, string $group = self::CACHE_GROUP ): bool {
+		$ok = true;
+		if ( wp_using_ext_object_cache() ) {
+			$ok = (bool) wp_cache_delete( $key, $group );
+		}
+		// Always delete transient as fallback to ensure cleanup across environments.
+		$ok = (bool) ( $ok & delete_site_transient( $key ) );
+		return $ok;
+	}
+
+	/**
+	 * Build a rate-limit cache key for an IP
+	 *
+	 * @param string $ip Client IP.
+	 * @return string
+	 */
+	private static function build_rate_limit_key( string $ip ): string {
+		return 'dio_cron_rate_limit_' . md5( $ip );
+	}
+	/**
 	 * Update network-wide stats for DIO Cron runs.
 	 *
 	 * @param int $sites_processed Number of sites processed in this run.
 	 * @return void
 	 */
 	public static function update_network_stats( int $sites_processed ) {
-		$key   = 'dio_cron_network_stats';
-		$stats = get_site_transient( $key );
+		$stats = self::site_cache_get( self::NETWORK_STATS_KEY, self::CACHE_GROUP, [] );
 		if ( ! is_array( $stats ) ) {
-			$stats = [ 
-				'total_runs'            => 0,
-				'last_run'              => 0,
-				'total_sites_processed' => 0,
-			];
+			$stats = self::network_stats_defaults();
+		} else {
+			// Ensure we have all expected keys.
+			$stats = array_merge( self::network_stats_defaults(), $stats );
 		}
-		++$stats[ 'total_runs' ];
-		$stats[ 'last_run' ]              = time();
+		$stats[ 'total_runs' ]++;
+		$stats[ 'last_run' ]                 = time();
 		$stats[ 'total_sites_processed' ] += $sites_processed;
-		set_site_transient( $key, $stats, DAY_IN_SECONDS );
+		$stats[ 'sites_processed_last_run' ] = $sites_processed;
+		self::site_cache_set( self::NETWORK_STATS_KEY, $stats, DAY_IN_SECONDS, self::CACHE_GROUP );
 	}
 
 	/**
@@ -43,16 +145,12 @@ class DIO_Cron_Utilities {
 	 * @return array
 	 */
 	public static function get_network_stats() {
-		$key   = 'dio_cron_network_stats';
-		$stats = get_site_transient( $key );
+		$stats = self::site_cache_get( self::NETWORK_STATS_KEY, self::CACHE_GROUP, [] );
 		if ( ! is_array( $stats ) ) {
-			$stats = [ 
-				'total_runs'            => 0,
-				'last_run'              => 0,
-				'total_sites_processed' => 0,
-			];
+			return self::network_stats_defaults();
 		}
-		return $stats;
+		// Merge to ensure forward/backward compatibility when new keys are added.
+		return array_merge( self::network_stats_defaults(), $stats );
 	}
 
 	/**
@@ -197,6 +295,26 @@ class DIO_Cron_Utilities {
 	}
 
 	/**
+	 * Get default per-page for Action Scheduler queries (centralized)
+	 *
+	 * @param int $default Default value.
+	 * @return int
+	 */
+	public static function get_default_actions_per_page( int $default = 25 ): int {
+		return (int) apply_filters( 'dio_cron_actions_per_page', $default );
+	}
+
+	/**
+	 * Get batch size for manual processing (centralized)
+	 *
+	 * @param int $default Default batch size.
+	 * @return int
+	 */
+	public static function get_default_batch_size( int $default = 25 ): int {
+		return (int) apply_filters( 'dio_cron_batch_size', $default );
+	}
+
+	/**
 	 * Get common Action Scheduler query arguments
 	 *
 	 * @param string $hook Hook name.
@@ -208,7 +326,7 @@ class DIO_Cron_Utilities {
 		return [ 
 			'hook'     => $hook,
 			'status'   => $status,
-			'group'    => 'dio-cron',
+			'group'    => self::AS_GROUP,
 			'per_page' => $per_page,
 		];
 	}
@@ -316,26 +434,15 @@ class DIO_Cron_Utilities {
 	 * @return array|\WP_Error
 	 */
 	public static function get_cached_sites( ?int $number = null ) {
-		$cache_key   = 'dio_cron_sites';
-		$cache_group = 'dio_cron';
-
-		// Try object cache first (redis, memcached, etc.).
-		if ( wp_using_ext_object_cache() ) {
-			$sites = wp_cache_get( $cache_key, $cache_group );
-			if ( false !== $sites ) {
-				return $sites;
-			}
-		} else {
-			// Fall back to transients for standard WordPress.
-			$sites = get_site_transient( $cache_key );
-			if ( false !== $sites ) {
-				return $sites;
-			}
+		// Try cache first (object cache or site transient depending on environment).
+		$sites = self::site_cache_get( self::CACHED_SITES_KEY, self::CACHE_GROUP );
+		if ( false !== $sites && null !== $sites ) {
+			return $sites;
 		}
 
 		// Remove transient from previous version during cache miss.
-		if ( false !== get_site_transient( 'dss_cron_sites' ) ) {
-			delete_site_transient( 'dss_cron_sites' );
+		if ( false !== get_site_transient( self::LEGACY_SITES_KEY ) ) {
+			delete_site_transient( self::LEGACY_SITES_KEY );
 		}
 
 		// Get all public sites in the network.
@@ -345,7 +452,7 @@ class DIO_Cron_Utilities {
 				'archived' => 0,
 				'deleted'  => 0,
 				'spam'     => 0,
-				'number'   => $number ?? apply_filters( 'dio_cron_number_of_sites', 200 ),
+				'number'   => $number ?? apply_filters( self::FILTER_SITES_LIMIT, 200 ),
 			]
 		);
 
@@ -353,14 +460,8 @@ class DIO_Cron_Utilities {
 			return $sites;
 		}
 
-		$cache_duration = apply_filters( 'dio_cron_sites_transient', HOUR_IN_SECONDS );
-
-		// Store in appropriate cache.
-		if ( wp_using_ext_object_cache() ) {
-			wp_cache_set( $cache_key, $sites, $cache_group, $cache_duration );
-		} else {
-			set_site_transient( $cache_key, $sites, $cache_duration );
-		}
+		$cache_duration = apply_filters( self::FILTER_SITES_TTL, HOUR_IN_SECONDS );
+		self::site_cache_set( self::CACHED_SITES_KEY, $sites, $cache_duration, self::CACHE_GROUP );
 
 		return $sites;
 	}
@@ -371,20 +472,7 @@ class DIO_Cron_Utilities {
 	 * @return bool
 	 */
 	public static function clear_sites_cache(): bool {
-		$cache_key   = 'dio_cron_sites';
-		$cache_group = 'dio_cron';
-
-		$success = true;
-
-		// Clear from object cache if available.
-		if ( wp_using_ext_object_cache() ) {
-			$success &= wp_cache_delete( $cache_key, $cache_group );
-		}
-
-		// Always clear from transients (fallback).
-		$success &= delete_site_transient( $cache_key );
-
-		return (bool) $success;
+		return self::site_cache_delete( self::CACHED_SITES_KEY, self::CACHE_GROUP );
 	}
 
 	/**
@@ -495,11 +583,15 @@ class DIO_Cron_Utilities {
 	 * @return bool
 	 */
 	public static function check_rate_limit( int $max_requests = 5, int $time_window = 5 * MINUTE_IN_SECONDS ): bool {
-		$client_ip = self::get_client_ip();
-		$cache_key = 'dio_cron_rate_limit_' . md5( $client_ip );
+		// Allow customization through filters while keeping method parameters as defaults.
+		$max_requests = (int) apply_filters( self::FILTER_RL_MAX_REQUESTS, $max_requests );
+		$time_window  = (int) apply_filters( self::FILTER_RL_TIME_WINDOW, $time_window );
 
-		$requests = get_site_transient( $cache_key );
-		if ( false === $requests ) {
+		$client_ip = self::get_client_ip();
+		$cache_key = self::build_rate_limit_key( $client_ip );
+
+		$requests = self::site_cache_get( $cache_key, self::CACHE_GROUP, [] );
+		if ( false === $requests || ! is_array( $requests ) ) {
 			$requests = [];
 		}
 
@@ -519,7 +611,7 @@ class DIO_Cron_Utilities {
 
 		// Add current request.
 		$requests[] = $current_time;
-		set_site_transient( $cache_key, $requests, $time_window );
+		self::site_cache_set( $cache_key, $requests, $time_window, self::CACHE_GROUP );
 
 		return true;
 	}
@@ -557,14 +649,12 @@ class DIO_Cron_Utilities {
 	 * @return bool True if lock acquired, false if already locked or ran too recently.
 	 */
 	public static function acquire_execution_lock( int $timeout = 300, int $min_interval = 60 ): bool {
-		$lock_key     = 'dio_cron_execution_lock';
-		$last_run_key = 'dio_cron_last_run';
-		$now          = time();
-		$last_run     = (int) get_site_transient( $last_run_key );
+		$now      = time();
+		$last_run = (int) self::site_cache_get( self::LAST_RUN_KEY, self::CACHE_GROUP, 0 );
 		if ( $last_run && ( $now - $last_run ) < $min_interval ) {
 			return false; // Ran too recently.
 		}
-		$lock = get_site_transient( $lock_key );
+		$lock = self::site_cache_get( self::EXEC_LOCK_KEY, self::CACHE_GROUP );
 		if ( $lock && isset( $lock[ 'expires' ] ) && $lock[ 'expires' ] > $now ) {
 			return false; // Already locked.
 		}
@@ -574,11 +664,11 @@ class DIO_Cron_Utilities {
 			'timestamp' => $now,
 			'expires'   => $now + $timeout,
 		];
-		set_site_transient( $lock_key, $lock_data, $timeout );
+		self::site_cache_set( self::EXEC_LOCK_KEY, $lock_data, $timeout, self::CACHE_GROUP );
 		// Double-check we got the lock (race protection)
-		$verify = get_site_transient( $lock_key );
+		$verify = self::site_cache_get( self::EXEC_LOCK_KEY, self::CACHE_GROUP );
 		if ( $verify && $verify[ 'timestamp' ] === $now ) {
-			set_site_transient( $last_run_key, $now, $timeout );
+			self::site_cache_set( self::LAST_RUN_KEY, $now, $timeout, self::CACHE_GROUP );
 			return true;
 		}
 		return false;
@@ -590,7 +680,7 @@ class DIO_Cron_Utilities {
 	 * @return bool
 	 */
 	public static function release_execution_lock() {
-		return delete_site_transient( 'dio_cron_execution_lock' );
+		return self::site_cache_delete( self::EXEC_LOCK_KEY, self::CACHE_GROUP );
 	}
 
 	/**
@@ -599,7 +689,7 @@ class DIO_Cron_Utilities {
 	 * @return bool
 	 */
 	public static function is_execution_locked() {
-		$lock = get_site_transient( 'dio_cron_execution_lock' );
+		$lock = self::site_cache_get( self::EXEC_LOCK_KEY, self::CACHE_GROUP );
 		return ( $lock && isset( $lock[ 'expires' ] ) && $lock[ 'expires' ] > time() );
 	}
 
@@ -609,7 +699,7 @@ class DIO_Cron_Utilities {
 	 * @return array|null
 	 */
 	public static function get_execution_lock_info() {
-		$lock = get_site_transient( 'dio_cron_execution_lock' );
+		$lock = self::site_cache_get( self::EXEC_LOCK_KEY, self::CACHE_GROUP );
 		if ( $lock && isset( $lock[ 'expires' ] ) && $lock[ 'expires' ] > time() ) {
 			return $lock;
 		}

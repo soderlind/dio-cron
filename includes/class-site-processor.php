@@ -83,7 +83,8 @@ class DIO_Cron_Site_Processor {
 				// translators: %d is the site ID.
 				throw new \Exception( sprintf( esc_html__( 'Site with ID %d not found', 'dio-cron' ), esc_html( $site_id ) ) );
 			}
-			$site_url = $site->siteurl;
+			// Use WP_Site magic property for performance (avoids switch_to_blog()).
+			$site_url = isset( $site->siteurl ) ? $site->siteurl : ( method_exists( $site, '__get' ) ? (string) $site->__get( 'siteurl' ) : '' );
 		}
 
 		// Log the actual cron trigger.
@@ -136,24 +137,51 @@ class DIO_Cron_Site_Processor {
 	 * Trigger cron for a specific site
 	 *
 	 * @param string $site_url Site URL.
+	 * @param bool   $admin_context Whether this is being called from admin context.
 	 * @return array|\WP_Error
 	 */
-	public function trigger_site_cron( $site_url ) {
-		$start_time = microtime( true );
-		$cron_url   = trailingslashit( $site_url ) . 'wp-cron.php?doing_wp_cron';
-		$timeout    = $this->get_timeout();
+	public function trigger_site_cron( $site_url, $admin_context = false ) {
+		$start_time   = microtime( true );
+		$cron_url     = trailingslashit( $site_url ) . 'wp-cron.php?doing_wp_cron';
+		$base_timeout = $admin_context ? 10 : $this->get_timeout(); // Reasonable timeout for admin context
+
+		/**
+		 * Filter the timeout for admin context operations
+		 *
+		 * @param int    $base_timeout   The base timeout value (10s for admin, 15s for background)
+		 * @param bool   $admin_context  Whether this is an admin context operation
+		 * @param string $site_url       The site URL being processed
+		 */
+		$timeout = apply_filters( 'dio_cron_admin_timeout', $base_timeout, $admin_context, $site_url );
+
+		// Validate URL early.
+		if ( ! wp_http_validate_url( $cron_url ) ) {
+			return new \WP_Error( 'invalid_url', sprintf( esc_html__( 'Invalid cron URL: %s', 'dio-cron' ), esc_url_raw( $cron_url ) ) );
+		}
 
 		// Log the exact URL being called.
 		$this->log_if_enabled(
 			sprintf(
-				'DIO Cron: Making HTTP request to %s',
-				$cron_url
+				'DIO Cron: Making HTTP request to %s (timeout: %ds, admin_context: %s)',
+				$cron_url,
+				$timeout,
+				$admin_context ? 'true' : 'false'
 			)
 		);
 
+		$sslverify_default = true;
+		/**
+		 * Allow overriding SSL verification for cron requests.
+		 * Defaults to true for security; set to false for local dev/self-signed certs if needed.
+		 *
+		 * @param bool   $sslverify_default Whether to verify SSL certs.
+		 * @param string $site_url          The site URL being processed.
+		 */
+		$sslverify = apply_filters( 'dio_cron_sslverify', $sslverify_default, $site_url );
+
 		$args = [ 
 			'blocking'  => true,  // We want to wait for the response in queued processing.
-			'sslverify' => false,
+			'sslverify' => $sslverify,
 			'timeout'   => $timeout,
 			'headers'   => [ 
 				'User-Agent' => 'DIO-Cron/' . DIO_Cron::VERSION,
@@ -225,7 +253,7 @@ class DIO_Cron_Site_Processor {
 				'DIO Cron Warning: Non-200 response %d for %s - Body: %s',
 				$response_code,
 				$cron_url,
-				substr( $response_body, 0, 200 ) // First 200 chars of response.
+				wp_strip_all_tags( substr( (string) $response_body, 0, 200 ) ) // First 200 chars of response, stripped.
 			)
 		);
 
@@ -368,21 +396,26 @@ class DIO_Cron_Site_Processor {
 	 * @return array
 	 */
 	private function get_today_date_range() {
-		$wp_timezone = wp_timezone_string();
-		// phpcs:ignore WordPress.DateTime.CurrentTimeTimestamp.Requested -- Legacy Action Scheduler compatibility requires timestamp format
-		$current_local_time = current_time( 'timestamp', false ); // false = local time, not GMT.
-		$today_start        = strtotime( 'today midnight', $current_local_time );
-		$today_end          = strtotime( 'tomorrow midnight', $current_local_time ) - 1;
-		$wp_current_time    = current_time( 'Y-m-d H:i:s' );
+		$tz          = wp_timezone();
+		$now         = new \DateTimeImmutable( 'now', $tz );
+		$start_local = $now->setTime( 0, 0, 0 );
+		$end_local   = $start_local->modify( '+1 day' )->modify( '-1 second' );
+
+		$start_utc = $start_local->setTimezone( new \DateTimeZone( 'UTC' ) );
+		$end_utc   = $end_local->setTimezone( new \DateTimeZone( 'UTC' ) );
 
 		return [ 
-			'timezone'              => $wp_timezone,
-			'current_local_time'    => $current_local_time,
-			'current_time_readable' => $wp_current_time,
-			'today_start'           => $today_start,
-			'today_end'             => $today_end,
-			'today_start_readable'  => wp_date( 'Y-m-d H:i:s', $today_start ),
-			'today_end_readable'    => wp_date( 'Y-m-d H:i:s', $today_end ),
+			'timezone'              => $tz->getName(),
+			'current_local_time'    => $now->getTimestamp(),
+			'current_time_readable' => wp_date( 'Y-m-d H:i:s', $now->getTimestamp() ),
+			// Local (site timezone) timestamps and readable forms
+			'today_start'           => $start_local->getTimestamp(),
+			'today_end'             => $end_local->getTimestamp(),
+			'today_start_readable'  => wp_date( 'Y-m-d H:i:s', $start_local->getTimestamp() ),
+			'today_end_readable'    => wp_date( 'Y-m-d H:i:s', $end_local->getTimestamp() ),
+			// UTC strings for DB queries on *_gmt columns
+			'today_start_utc_str'   => $start_utc->format( 'Y-m-d H:i:s' ),
+			'today_end_utc_str'     => $end_utc->format( 'Y-m-d H:i:s' ),
 		];
 	}
 
@@ -449,8 +482,8 @@ class DIO_Cron_Site_Processor {
 	 * @return array|null
 	 */
 	private function get_stats_via_direct_query( $date_info ) {
-		$completed_count = $this->count_actions_fast( 'complete', $date_info[ 'today_start' ], $date_info[ 'today_end' ] );
-		$failed_count    = $this->count_actions_fast( 'failed', $date_info[ 'today_start' ], $date_info[ 'today_end' ] );
+		$completed_count = $this->count_actions_fast( 'complete', $date_info[ 'today_start_utc_str' ], $date_info[ 'today_end_utc_str' ] );
+		$failed_count    = $this->count_actions_fast( 'failed', $date_info[ 'today_start_utc_str' ], $date_info[ 'today_end_utc_str' ] );
 
 		// If counts are non-zero (or zero but valid), return stats directly.
 		if ( null !== $completed_count && null !== $failed_count ) {
@@ -471,18 +504,18 @@ class DIO_Cron_Site_Processor {
 		// Get all completed and failed actions.
 		$completed_all = as_get_scheduled_actions(
 			[ 
-				'hook'     => 'dio_cron_process_site',
+				'hook'     => DIO_Cron_Utilities::PROCESS_SITE_HOOK,
 				'status'   => 'complete',
-				'group'    => 'dio-cron',
+				'group'    => DIO_Cron_Utilities::get_action_scheduler_group(),
 				'per_page' => 1000, // Get more results to ensure we don't miss any.
 			]
 		);
 
 		$failed_all = as_get_scheduled_actions(
 			[ 
-				'hook'     => 'dio_cron_process_site',
+				'hook'     => DIO_Cron_Utilities::PROCESS_SITE_HOOK,
 				'status'   => 'failed',
-				'group'    => 'dio-cron',
+				'group'    => DIO_Cron_Utilities::get_action_scheduler_group(),
 				'per_page' => 1000,
 			]
 		);
@@ -551,18 +584,18 @@ class DIO_Cron_Site_Processor {
 		// Get recent actions without date filtering.
 		$recent_completed = as_get_scheduled_actions(
 			[ 
-				'hook'     => 'dio_cron_process_site',
+				'hook'     => DIO_Cron_Utilities::PROCESS_SITE_HOOK,
 				'status'   => 'complete',
-				'group'    => 'dio-cron',
+				'group'    => DIO_Cron_Utilities::get_action_scheduler_group(),
 				'per_page' => 100,
 			]
 		);
 
 		$recent_failed = as_get_scheduled_actions(
 			[ 
-				'hook'     => 'dio_cron_process_site',
+				'hook'     => DIO_Cron_Utilities::PROCESS_SITE_HOOK,
 				'status'   => 'failed',
-				'group'    => 'dio-cron',
+				'group'    => DIO_Cron_Utilities::get_action_scheduler_group(),
 				'per_page' => 100,
 			]
 		);
@@ -610,30 +643,17 @@ class DIO_Cron_Site_Processor {
 			}
 		}
 
-		// Try to get scheduled date.
+		// Try to get scheduled date via typical schedule accessor.
 		if ( method_exists( $action, 'get_scheduled_date' ) ) {
 			$date = $action->get_scheduled_date();
 			if ( $date && is_object( $date ) && method_exists( $date, 'getTimestamp' ) ) {
 				return $date->getTimestamp();
 			}
 		}
-
-		// Try the store method if available.
-		if ( method_exists( $action, 'get_store' ) ) {
-			$store = $action->get_store();
-			if ( $store && method_exists( $store, 'get_date' ) ) {
-				$date = $store->get_date( $action->get_id() );
-				if ( $date && is_object( $date ) && method_exists( $date, 'getTimestamp' ) ) {
-					return $date->getTimestamp();
-				}
-			}
-		}
-
-		// Try to access action ID and get date from ActionScheduler directly.
-		if ( method_exists( $action, 'get_id' ) ) {
-			$action_id = $action->get_id();
-			if ( DIO_Cron_Utilities::action_scheduler_function_exists( 'as_get_datetime_object' ) ) {
-				$date = as_get_datetime_object( $action_id );
+		if ( method_exists( $action, 'get_schedule' ) ) {
+			$schedule = $action->get_schedule();
+			if ( $schedule && method_exists( $schedule, 'get_date' ) ) {
+				$date = $schedule->get_date();
 				if ( $date && method_exists( $date, 'getTimestamp' ) ) {
 					return $date->getTimestamp();
 				}
@@ -716,7 +736,7 @@ class DIO_Cron_Site_Processor {
 	 * @param int    $end_time End timestamp.
 	 * @return array
 	 */
-	private function get_actions_with_dates( $status, $start_time, $end_time ) {
+	private function get_actions_with_dates( $status, $start_utc_str, $end_utc_str ) {
 		global $wpdb;
 
 		// Tables.
@@ -725,15 +745,15 @@ class DIO_Cron_Site_Processor {
 
 		// Normalize inputs.
 		$as_status = ( 'complete' === $status ) ? 'complete' : 'failed';
-		$hook      = 'dio_cron_process_site';
+		$hook      = DIO_Cron_Utilities::PROCESS_SITE_HOOK;
 		$group_id  = $this->get_dio_cron_group_id();
 		if ( ! $group_id ) {
 			return [];
 		}
 
 		// Compare against DATETIME to keep predicates sargable (no functions on columns).
-		$start_gmt = wp_date( 'Y-m-d H:i:s', (int) $start_time );
-		$end_gmt   = wp_date( 'Y-m-d H:i:s', (int) $end_time );
+		$start_gmt = $start_utc_str;
+		$end_gmt   = $end_utc_str;
 
 		// Use UNION to avoid OR across different tables, which blocks index usage.
 		// phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- ActionScheduler table names are safe
@@ -782,21 +802,21 @@ class DIO_Cron_Site_Processor {
 	 * @param int    $end_time    End timestamp.
 	 * @return int|null           Count or null on error.
 	 */
-	private function count_actions_fast( $status, $start_time, $end_time ) {
+	private function count_actions_fast( $status, $start_utc_str, $end_utc_str ) {
 		global $wpdb;
 
 		$table_actions = $wpdb->base_prefix . 'actionscheduler_actions';
 		$table_logs    = $wpdb->base_prefix . 'actionscheduler_logs';
 
 		$as_status = ( 'complete' === $status ) ? 'complete' : 'failed';
-		$hook      = 'dio_cron_process_site';
+		$hook      = DIO_Cron_Utilities::PROCESS_SITE_HOOK;
 		$group_id  = $this->get_dio_cron_group_id();
 		if ( ! $group_id ) {
 			return 0;
 		}
 
-		$start_gmt = wp_date( 'Y-m-d H:i:s', (int) $start_time );
-		$end_gmt   = wp_date( 'Y-m-d H:i:s', (int) $end_time );
+		$start_gmt = $start_utc_str;
+		$end_gmt   = $end_utc_str;
 
 		// Count DISTINCT action IDs from union of (scheduled in window) and (logged in window).
 		// phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared,WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching -- ActionScheduler table names are safe, performance-critical queries

@@ -21,7 +21,7 @@ class DIO_Cron {
 	 *
 	 * @var string VERSION Plugin version
 	 */
-	const VERSION = '2.2.13';    /**
+	const VERSION = '2.2.20';    /**
 			* Instance of the queue manager
 			*
 			* @var DIO_Cron_Queue_Manager
@@ -149,8 +149,8 @@ class DIO_Cron {
 		add_action( 'template_redirect', [ $this, 'handle_template_redirect' ] );
 
 		// Register custom action hooks for Action Scheduler.
-		add_action( 'dio_cron_process_site', [ $this->site_processor, 'process_single_site' ] );
-		add_action( 'dio_cron_run_all_sites', [ $this->queue_manager, 'enqueue_all_sites' ] );
+		add_action( DIO_Cron_Utilities::PROCESS_SITE_HOOK, [ $this->site_processor, 'process_single_site' ] );
+		add_action( DIO_Cron_Utilities::RUN_ALL_SITES_HOOK, [ $this->queue_manager, 'enqueue_all_sites' ] );
 
 		// Initialize admin interface for network admin.
 		add_action( 'init', [ $this, 'init_admin_interface' ] );

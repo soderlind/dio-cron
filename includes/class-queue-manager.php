@@ -90,14 +90,14 @@ class DIO_Cron_Queue_Manager {
 		}
 
 		$site_data = [ 
-			'site_id'  => $site->blog_id,
-			'site_url' => $site->siteurl,
+			$site->blog_id,    // First parameter: int $site_id
+			$site->siteurl,    // Second parameter: string $site_url
 		];
 
 		$action_id = as_enqueue_async_action(
 			DIO_Cron_Utilities::PROCESS_SITE_HOOK,
 			$site_data,
-			'dio-cron'
+			DIO_Cron_Utilities::get_action_scheduler_group()
 		);
 
 		if ( ! $action_id ) {
@@ -130,12 +130,15 @@ class DIO_Cron_Queue_Manager {
 		// Unschedule any existing recurring job.
 		$this->unschedule_recurring_job();
 
+		// Allow site owners to adjust the cadence.
+		$frequency = (int) apply_filters( 'dio_cron_recurring_frequency', $frequency );
+
 		$action_id = as_schedule_recurring_action(
 			time(),
 			$frequency,
 			DIO_Cron_Utilities::RUN_ALL_SITES_HOOK,
 			[],
-			'dio-cron'
+			DIO_Cron_Utilities::get_action_scheduler_group()
 		);
 
 		if ( ! $action_id ) {
@@ -152,7 +155,7 @@ class DIO_Cron_Queue_Manager {
 	 */
 	public function unschedule_recurring_job() {
 		if ( DIO_Cron_Utilities::action_scheduler_function_exists( 'as_unschedule_all_actions' ) ) {
-			as_unschedule_all_actions( DIO_Cron_Utilities::RUN_ALL_SITES_HOOK, [], 'dio-cron' );
+			as_unschedule_all_actions( DIO_Cron_Utilities::RUN_ALL_SITES_HOOK, [], DIO_Cron_Utilities::get_action_scheduler_group() );
 		}
 	}
 
@@ -166,23 +169,30 @@ class DIO_Cron_Queue_Manager {
 			return DIO_Cron_Utilities::get_action_scheduler_error();
 		}
 
-		$pending = as_get_scheduled_actions(
-			DIO_Cron_Utilities::get_action_scheduler_query_args( DIO_Cron_Utilities::PROCESS_SITE_HOOK, 'pending' )
+		// Get counts more reliably by requesting IDs with a high per_page.
+		$pending_ids = as_get_scheduled_actions(
+			array_merge(
+				DIO_Cron_Utilities::get_action_scheduler_query_args( DIO_Cron_Utilities::PROCESS_SITE_HOOK, 'pending', 10000 ),
+				[ 'return' => 'ids' ]
+			)
 		);
 
-		$in_progress = as_get_scheduled_actions(
-			DIO_Cron_Utilities::get_action_scheduler_query_args( DIO_Cron_Utilities::PROCESS_SITE_HOOK, 'in-progress' )
+		$in_progress_ids = as_get_scheduled_actions(
+			array_merge(
+				DIO_Cron_Utilities::get_action_scheduler_query_args( DIO_Cron_Utilities::PROCESS_SITE_HOOK, 'in-progress', 10000 ),
+				[ 'return' => 'ids' ]
+			)
 		);
 
-		$failed = as_get_scheduled_actions(
+		$failed_actions = as_get_scheduled_actions(
 			DIO_Cron_Utilities::get_action_scheduler_query_args( DIO_Cron_Utilities::PROCESS_SITE_HOOK, 'failed', 10 )
 		);
 
 		return [ 
-			'pending'        => count( $pending ),
-			'in_progress'    => count( $in_progress ),
-			'failed'         => count( $failed ),
-			'failed_actions' => $failed,
+			'pending'        => is_array( $pending_ids ) ? count( $pending_ids ) : 0,
+			'in_progress'    => is_array( $in_progress_ids ) ? count( $in_progress_ids ) : 0,
+			'failed'         => is_array( $failed_actions ) ? count( $failed_actions ) : 0,
+			'failed_actions' => $failed_actions,
 		];
 	}
 
@@ -196,7 +206,7 @@ class DIO_Cron_Queue_Manager {
 			return false;
 		}
 
-		as_unschedule_all_actions( DIO_Cron_Utilities::PROCESS_SITE_HOOK, [], 'dio-cron' );
+		as_unschedule_all_actions( DIO_Cron_Utilities::PROCESS_SITE_HOOK, [], DIO_Cron_Utilities::get_action_scheduler_group() );
 		return true;
 	}
 
@@ -210,6 +220,6 @@ class DIO_Cron_Queue_Manager {
 	 * @return int
 	 */
 	public function get_batch_size() {
-		return apply_filters( 'dio_cron_batch_size', 25 );
+		return DIO_Cron_Utilities::get_default_batch_size( 25 );
 	}
 }
