@@ -1,5 +1,10 @@
 ## ⚙️ Changelog
 
+### 2.3.2 - Admin Header Warning Fix
+
+#### 🐛 Bug Fixes
+- Resolved "Cannot modify header information" warnings in the admin by removing early echo output from load-time hooks and gating debug comments behind `WP_DEBUG`. This ensures redirects (e.g., after POST and to Action Scheduler) work without header issues.
+
 ### 2.3.1 - Faster Stats Query
 
 #### ⚡ Performance
