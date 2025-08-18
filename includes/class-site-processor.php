@@ -818,24 +818,11 @@ class DIO_Cron_Site_Processor {
 		$start_gmt = $start_utc_str;
 		$end_gmt   = $end_utc_str;
 
-		// Count DISTINCT action IDs from union of (scheduled in window) and (logged in window).
-		// phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared,WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching -- ActionScheduler table names are safe, performance-critical queries
-		$part_actions = $wpdb->prepare(
-			"SELECT a.action_id
-			 FROM {$table_actions} a
-			 WHERE a.hook = %s
-			   AND a.status = %s
-			   AND a.group_id = %d
-			   AND a.scheduled_date_gmt BETWEEN %s AND %s",
-			$hook,
-			$as_status,
-			$group_id,
-			$start_gmt,
-			$end_gmt
-		);
-
-		$part_logs = $wpdb->prepare(
-			"SELECT a.action_id
+		// Use COUNT(DISTINCT) over logs join to count actions that actually completed/failed within window.
+		// This better reflects "today's" completed/failed actions and avoids UNION and temporary tables.
+		// phpcs:disable WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching
+		$sql = $wpdb->prepare(
+			"SELECT COUNT(DISTINCT a.action_id) AS cnt
 			 FROM {$table_actions} a
 			 INNER JOIN {$table_logs} l ON l.action_id = a.action_id
 			 WHERE a.hook = %s
@@ -849,11 +836,9 @@ class DIO_Cron_Site_Processor {
 			$end_gmt
 		);
 
-		$sql = "SELECT COUNT(*) AS cnt FROM (({$part_actions}) UNION ({$part_logs})) AS x";
-		// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared -- SQL parts are already prepared above
 		$count = $wpdb->get_var( $sql );
-		return is_null( $count ) ? null : (int) $count;
-		// phpcs:enable WordPress.DB.PreparedSQL.InterpolatedNotPrepared,WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching
+		// phpcs:enable WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching
+		return is_null( $count ) ? 0 : (int) $count;
 	}
 
 	/**
