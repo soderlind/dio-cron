@@ -3,7 +3,7 @@ Contributors: PerS
 Tags: cron, multisite, wp-cron, action-scheduler, admin-interface, security
 Requires at least: 6.5
 Tested up to: 6.8
-Stable tag: 2.2.21
+Stable tag: 2.3.0
 Requires PHP: 8.2
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -68,13 +68,7 @@ Automatic updates directly from GitHub:
 
 * WordPress Multisite installation
 * Super Admin access (`manage_network_options` capability)
-* Action Scheduler 3.8+ (bundled in `lib/action-scheduler/` or installed via Composer)
-
-If another plugin doesn’t provide Action Scheduler, DIO Cron will load a bundled copy if present. Preferred load order:
-
-1. `lib/action-scheduler/action-scheduler.php` (preferred)
-2. `vendor/woocommerce/action-scheduler/action-scheduler.php` (fallback)
-3. Existing Action Scheduler from other plugins (auto-detected)
+* Action Scheduler 3.8+ installed as a separate plugin (Required Plugin: action-scheduler)
 
 = Security Setup =
 
@@ -301,6 +295,10 @@ DIO Cron includes detailed logging for debugging wp-cron triggers, but this feat
 1. No screenshots available.
 
 == Changelog ==
+
+= 2.3.0 =
+* Change: Stop bundling or Composer-loading Action Scheduler. This plugin now requires the Action Scheduler plugin to be installed and active.
+* Docs: Updated requirements and removed references to bundled/vendor Action Scheduler loading.
 
 = 2.2.21 =
 * Enhancement: Bundled Action Scheduler under `lib/action-scheduler/` and updated loader to prefer `lib/` over `vendor/`, while safely skipping initialization when another plugin provides Action Scheduler.

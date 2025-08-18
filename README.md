@@ -47,8 +47,8 @@ DIO Cron triggers WordPress cron jobs across all public sites in your multisite 
 **Requirements:**
 - WordPress Multisite
 - Super Admin access
-- Action Scheduler 3.8+ (installed automatically)
-- Plugin Update Checker 5.0+ (installed automatically)
+- Action Scheduler 3.8+ plugin installed and active
+- Plugin Update Checker 5.0+ (bundled)
 
 ## How to Use It
 

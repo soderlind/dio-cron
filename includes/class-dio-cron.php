@@ -21,7 +21,7 @@ class DIO_Cron {
 	 *
 	 * @var string VERSION Plugin version
 	 */
-	const VERSION = '2.2.21';    /**
+	const VERSION = '2.3.0';    /**
 			* Instance of the queue manager
 			*
 			* @var DIO_Cron_Queue_Manager
@@ -74,7 +74,7 @@ class DIO_Cron {
 	 * @return void
 	 */
 	private function init() {
-		// Initialize Action Scheduler.
+		// Ensure Action Scheduler plugin is present; show admin notice if missing.
 		$this->init_action_scheduler();
 
 		// Load dependencies.
@@ -89,50 +89,27 @@ class DIO_Cron {
 	}
 
 	/**
-	 * Initialize Action Scheduler
+	 * Ensure Action Scheduler is available. The plugin now requires
+	 * the Action Scheduler plugin; no bundled/composer loading.
 	 *
 	 * @return void
 	 */
 	private function init_action_scheduler() {
-		// If Action Scheduler is already initialized or available from another plugin, use it
-		if ( function_exists( 'as_enqueue_async_action' ) || class_exists( '\ActionScheduler' ) ) {
-			// Action Scheduler is already available from another plugin, don't call init()
-			// since that would require a functions.php file which we don't have/need
-			return;
+		if ( ! DIO_Cron_Utilities::is_action_scheduler_available() ) {
+			// Surface an admin notice if somehow activated without dependency.
+			add_action( 'admin_notices', function () {
+				if ( current_user_can( 'manage_network_options' ) ) {
+					echo '<div class="notice notice-error"><p>' . esc_html__( 'DIO Cron requires the Action Scheduler plugin. Please install and activate Action Scheduler.', 'dio-cron' ) . '</p></div>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+				}
+			} );
 		}
+	}
 
-		// Check if ActionScheduler_Versions is available (indicating another plugin provides AS)
-		if ( class_exists( '\ActionScheduler_Versions' ) ) {
-			// Let the existing ActionScheduler handle initialization
-			return;
-		}
-
-		// Only load a bundled Action Scheduler if none is available.
-		// Prefer lib/ over vendor/ so we can ship AS without Composer.
-		$lib_path    = plugin_dir_path( __DIR__ ) . 'lib/action-scheduler/action-scheduler.php';
-		$vendor_path = plugin_dir_path( __DIR__ ) . 'vendor/woocommerce/action-scheduler/action-scheduler.php';
-
-		$action_scheduler_path = file_exists( $lib_path ) ? $lib_path : ( file_exists( $vendor_path ) ? $vendor_path : '' );
-		if ( $action_scheduler_path ) {
-			require_once $action_scheduler_path;
-
-			// Create a minimal functions.php file for Action Scheduler if it doesn't exist
-			$functions_file = plugin_dir_path( __DIR__ ) . 'functions.php';
-			if ( ! file_exists( $functions_file ) ) {
-				file_put_contents( $functions_file, "<?php\n// Minimal functions file for Action Scheduler compatibility\n" );
-			}
-
-			// Initialize Action Scheduler for our plugin only if we loaded it
-			if ( class_exists( '\ActionScheduler' ) && method_exists( '\ActionScheduler', 'init' ) ) {
-				$plugin_file = plugin_dir_path( __DIR__ ) . 'dio-cron.php';
-				\ActionScheduler::init( $plugin_file );
-			}
-		}
-	}	/**
-		 * Load required dependencies
-		 *
-		 * @return void
-		 */
+	/**
+	 * Load required dependencies
+	 *
+	 * @return void
+	 */
 	private function load_dependencies() {
 		require_once plugin_dir_path( __FILE__ ) . 'class-utilities.php';
 		require_once plugin_dir_path( __FILE__ ) . 'class-queue-manager.php';
@@ -380,27 +357,6 @@ class DIO_Cron {
 	 * @return void
 	 */
 	public static function activate() {
-		// Only initialize Action Scheduler if we loaded our bundled version
-		// Don't call ActionScheduler::init() if another plugin already provides it
-		if ( ! function_exists( 'as_enqueue_async_action' ) && ! class_exists( '\ActionScheduler_Versions' ) ) {
-			$lib_path              = plugin_dir_path( __DIR__ ) . 'lib/action-scheduler/action-scheduler.php';
-			$vendor_path           = plugin_dir_path( __DIR__ ) . 'vendor/woocommerce/action-scheduler/action-scheduler.php';
-			$action_scheduler_file = file_exists( $lib_path ) ? $lib_path : ( file_exists( $vendor_path ) ? $vendor_path : '' );
-			if ( $action_scheduler_file ) {
-				require_once $action_scheduler_file;
-
-				// Create minimal functions.php file if needed
-				$functions_file = plugin_dir_path( __DIR__ ) . 'functions.php';
-				if ( ! file_exists( $functions_file ) ) {
-					file_put_contents( $functions_file, "<?php\n// Minimal functions file for Action Scheduler compatibility\n" );
-				}
-
-				if ( class_exists( '\ActionScheduler' ) && method_exists( '\ActionScheduler', 'init' ) ) {
-					\ActionScheduler::init( $action_scheduler_file );
-				}
-			}
-		}
-
 		// Initialize rewrite rules.
 		$instance = self::get_instance();
 		$instance->init_rewrite_rules();
