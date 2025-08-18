@@ -21,7 +21,7 @@ class DIO_Cron {
 	 *
 	 * @var string VERSION Plugin version
 	 */
-	const VERSION = '2.2.20';    /**
+	const VERSION = '2.2.21';    /**
 			* Instance of the queue manager
 			*
 			* @var DIO_Cron_Queue_Manager
@@ -107,9 +107,13 @@ class DIO_Cron {
 			return;
 		}
 
-		// Only load our bundled Action Scheduler if none is available
-		$action_scheduler_path = plugin_dir_path( __DIR__ ) . 'vendor/woocommerce/action-scheduler/action-scheduler.php';
-		if ( file_exists( $action_scheduler_path ) ) {
+		// Only load a bundled Action Scheduler if none is available.
+		// Prefer lib/ over vendor/ so we can ship AS without Composer.
+		$lib_path    = plugin_dir_path( __DIR__ ) . 'lib/action-scheduler/action-scheduler.php';
+		$vendor_path = plugin_dir_path( __DIR__ ) . 'vendor/woocommerce/action-scheduler/action-scheduler.php';
+
+		$action_scheduler_path = file_exists( $lib_path ) ? $lib_path : ( file_exists( $vendor_path ) ? $vendor_path : '' );
+		if ( $action_scheduler_path ) {
 			require_once $action_scheduler_path;
 
 			// Create a minimal functions.php file for Action Scheduler if it doesn't exist
@@ -379,8 +383,10 @@ class DIO_Cron {
 		// Only initialize Action Scheduler if we loaded our bundled version
 		// Don't call ActionScheduler::init() if another plugin already provides it
 		if ( ! function_exists( 'as_enqueue_async_action' ) && ! class_exists( '\ActionScheduler_Versions' ) ) {
-			$action_scheduler_file = plugin_dir_path( __DIR__ ) . 'vendor/woocommerce/action-scheduler/action-scheduler.php';
-			if ( file_exists( $action_scheduler_file ) ) {
+			$lib_path              = plugin_dir_path( __DIR__ ) . 'lib/action-scheduler/action-scheduler.php';
+			$vendor_path           = plugin_dir_path( __DIR__ ) . 'vendor/woocommerce/action-scheduler/action-scheduler.php';
+			$action_scheduler_file = file_exists( $lib_path ) ? $lib_path : ( file_exists( $vendor_path ) ? $vendor_path : '' );
+			if ( $action_scheduler_file ) {
 				require_once $action_scheduler_file;
 
 				// Create minimal functions.php file if needed
