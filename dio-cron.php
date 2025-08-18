@@ -3,11 +3,12 @@
  * Plugin Name: DIO Cron
  * Plugin URI: https://github.com/soderlind/dio-cron
  * Description: Run wp-cron on all public sites in a multisite network with Action Scheduler integration, security token authentication, and comprehensive network admin interface.
- * Version: 2.2.21
+ * Version: 2.3.0
  * Author: Per Soderlind
  * Author URI: https://soderlind.no
  * License: GPL-2.0+
  * License URI: http://www.gnu.org/licenses/gpl-2.0.txt
+ * Requires Plugins: action-scheduler
  * Network: true
  * GitHub Plugin URI: soderlind/dio-cron
  * Primary Branch: main
@@ -50,29 +51,8 @@ require_once plugin_dir_path( __FILE__ ) . 'includes/class-dio-cron.php';
 register_activation_hook( __FILE__, [ DIO_Cron::class, 'activate' ] );
 register_deactivation_hook( __FILE__, [ DIO_Cron::class, 'deactivate' ] );
 
-// Initialize Action Scheduler early on plugins_loaded.
-add_action( 'plugins_loaded', function () {
-	// Check if Action Scheduler is already loaded by another plugin
-	if ( function_exists( 'as_enqueue_async_action' ) || class_exists( 'ActionScheduler' ) ) {
-		// Action Scheduler is already available, no need to load our bundled version
-		return;
-	}
-
-	// Check if the ActionScheduler class is being provided by another plugin
-	if ( class_exists( 'ActionScheduler_Versions' ) ) {
-		// Another plugin has already registered Action Scheduler, let it handle initialization
-		return;
-	}
-
-	// Only load our bundled Action Scheduler if none is available.
-	// Prefer lib/ over vendor/ so we can ship AS without Composer.
-	$lib_path              = __DIR__ . '/lib/action-scheduler/action-scheduler.php';
-	$vendor_path           = __DIR__ . '/vendor/woocommerce/action-scheduler/action-scheduler.php';
-	$action_scheduler_path = file_exists( $lib_path ) ? $lib_path : ( file_exists( $vendor_path ) ? $vendor_path : '' );
-	if ( $action_scheduler_path ) {
-		require_once $action_scheduler_path;
-	}
-}, 0 );
+// Action Scheduler is now a hard dependency via the Action Scheduler plugin.
+// No bundled or Composer-based loading is performed here.
 
 // Initialize the plugin.
 add_action(

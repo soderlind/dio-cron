@@ -24,7 +24,6 @@
 		"issues": "https://github.com/soderlind/dio-cron/issues"
 	},
 	"require": {
-		"woocommerce/action-scheduler": "^3.8",
 		"yahnis-elsts/plugin-update-checker": "^5.0"
 	},
 	"config": {

@@ -1,5 +1,13 @@
 ## ⚙️ Changelog
 
+### 2.3.0 - Require Action Scheduler Plugin (No Bundling)
+
+#### 🔄 Change
+- Removed bundled and Composer-based loading of Action Scheduler. DIO Cron now requires the official Action Scheduler plugin to be installed and active.
+
+#### 🧾 Documentation
+- Updated README and readme.txt to reflect the new requirement and removed references to `lib/action-scheduler/` and Composer-based AS loading.
+
 ### 2.2.21 - Bundled Action Scheduler & Safe Loader Preference
 
 #### ✨ Enhancements
