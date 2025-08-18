@@ -20,6 +20,8 @@ DIO Cron triggers WordPress cron jobs across all public sites in your multisite 
 - **Performance optimized** for large multisite networks
 - **Enhanced error handling** and recovery mechanisms
 
+Note: v2.3.1 improves the performance of daily stats by optimizing the underlying database query for large Action Scheduler tables.
+
 ## Quick Setup
 
 - **Quick Install**

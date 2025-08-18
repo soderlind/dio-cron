@@ -21,7 +21,7 @@ class DIO_Cron {
 	 *
 	 * @var string VERSION Plugin version
 	 */
-	const VERSION = '2.3.0';    /**
+	const VERSION = '2.3.1';    /**
 			* Instance of the queue manager
 			*
 			* @var DIO_Cron_Queue_Manager
@@ -74,11 +74,11 @@ class DIO_Cron {
 	 * @return void
 	 */
 	private function init() {
+		// Load dependencies first so Utilities is available for checks.
+		$this->load_dependencies();
+
 		// Ensure Action Scheduler plugin is present; show admin notice if missing.
 		$this->init_action_scheduler();
-
-		// Load dependencies.
-		$this->load_dependencies();
 
 		// Initialize components.
 		$this->queue_manager  = new DIO_Cron_Queue_Manager();

@@ -3,7 +3,7 @@ Contributors: PerS
 Tags: cron, multisite, wp-cron, action-scheduler, admin-interface, security
 Requires at least: 6.5
 Tested up to: 6.8
-Stable tag: 2.3.0
+Stable tag: 2.3.1
 Requires PHP: 8.2
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -295,6 +295,10 @@ DIO Cron includes detailed logging for debugging wp-cron triggers, but this feat
 1. No screenshots available.
 
 == Changelog ==
+
+= 2.3.1 =
+* Performance: Optimized daily stats counting by replacing UNION-based query with an index-friendly DISTINCT join on logs. Reduces temporary table creation and speeds up counts for large Action Scheduler tables.
+* Internal: Minor refactors in stats path; no behavioral changes.
 
 = 2.3.0 =
 * Change: Stop bundling or Composer-loading Action Scheduler. This plugin now requires the Action Scheduler plugin to be installed and active.

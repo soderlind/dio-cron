@@ -1,5 +1,13 @@
 ## ⚙️ Changelog
 
+### 2.3.1 - Faster Stats Query
+
+#### ⚡ Performance
+- Optimized daily stats counting by replacing UNION-based counts with an index-friendly `COUNT(DISTINCT)` over logs join. This avoids temporary tables and improves performance on large `actionscheduler_*` tables.
+
+#### 🧰 Internal
+- Minor refactors in stats path. No behavioral changes.
+
 ### 2.3.0 - Require Action Scheduler Plugin (No Bundling)
 
 #### 🔄 Change
