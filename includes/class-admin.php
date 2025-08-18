@@ -568,8 +568,8 @@ class DIO_Cron_Admin {
 					</p>
 					<p>
 						<code style="background: #f1f1f1; padding: 4px 8px; font-family: 'Courier New', monospace;">
-																																																																																																																																																				define( 'DISABLE_WP_CRON', true );
-																																																																																																																																																			</code>
+																																																																																																																																																							define( 'DISABLE_WP_CRON', true );
+																																																																																																																																																						</code>
 					</p>
 					<p>
 						<strong><?php esc_html_e( 'Important:', 'dio-cron' ); ?></strong>
@@ -783,8 +783,8 @@ class DIO_Cron_Admin {
 							</a>
 						<?php else : ?>
 							<code class="dio-cron-disabled-endpoint">
-																																																																																																																													<?php echo esc_url( home_url( '/dio-cron?token=YOUR_TOKEN_HERE' ) ); ?>
-																																																																																																																												</code>
+																																																																																																																																<?php echo esc_url( home_url( '/dio-cron?token=YOUR_TOKEN_HERE' ) ); ?>
+																																																																																																																															</code>
 						<?php endif; ?>
 
 						<p><strong><?php esc_html_e( 'Legacy Mode:', 'dio-cron' ); ?></strong></p>
@@ -795,8 +795,8 @@ class DIO_Cron_Admin {
 							</a>
 						<?php else : ?>
 							<code class="dio-cron-disabled-endpoint">
-																																																																																																																													<?php echo esc_url( home_url( '/dio-cron?immediate=1&token=YOUR_TOKEN_HERE' ) ); ?>
-																																																																																																																												</code>
+																																																																																																																																<?php echo esc_url( home_url( '/dio-cron?immediate=1&token=YOUR_TOKEN_HERE' ) ); ?>
+																																																																																																																															</code>
 						<?php endif; ?>
 
 						<p><strong><?php esc_html_e( 'GitHub Actions:', 'dio-cron' ); ?></strong></p>
@@ -807,8 +807,8 @@ class DIO_Cron_Admin {
 							</a>
 						<?php else : ?>
 							<code class="dio-cron-disabled-endpoint">
-																																																																																																																													<?php echo esc_url( home_url( '/dio-cron?ga&token=YOUR_TOKEN_HERE' ) ); ?>
-																																																																																																																												</code>
+																																																																																																																																<?php echo esc_url( home_url( '/dio-cron?ga&token=YOUR_TOKEN_HERE' ) ); ?>
+																																																																																																																															</code>
 						<?php endif; ?>
 					</div>
 				</div>
@@ -1014,11 +1014,8 @@ class DIO_Cron_Admin {
 			return;
 		}
 
-		// Debug: Add comment to see what screen we have.
-		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Debug display only, not processing form data
-		if ( isset( $_GET[ 'page' ] ) && 'dio-cron-status' === $_GET[ 'page' ] ) {
-			echo '<!-- DIO Cron Contextual Help Debug - Screen ID: ' . esc_html( $screen->id ) . ' -->';
-		}
+		// Note: Avoid any direct echo here (runs on load-* hook) to prevent
+		// "headers already sent" warnings before potential redirects.
 
 		// Check if this is our DIO Cron page - be more flexible with screen ID matching.
 		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Page identification only, not processing form data
@@ -1129,7 +1126,9 @@ class DIO_Cron_Admin {
 		}
 
 		$screen = get_current_screen();
-		if ( $screen ) {
+		// Only output debug comments when WP_DEBUG is enabled to minimize risk
+		// of accidental output interfering with redirects or headers.
+		if ( $screen && defined( 'WP_DEBUG' ) && WP_DEBUG ) {
 			echo '<!-- DIO Cron Debug - Screen ID: ' . esc_html( $screen->id ) . ', Page Hook: ' . esc_html( $this->page_hook ) . ', Base: ' . esc_html( $screen->base ?? 'N/A' ) . ' -->';
 		}
 	}
