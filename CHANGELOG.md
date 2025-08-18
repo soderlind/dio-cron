@@ -1,5 +1,14 @@
 ## ⚙️ Changelog
 
+### 2.2.21 - Bundled Action Scheduler & Safe Loader Preference
+
+#### ✨ Enhancements
+- Bundled Action Scheduler under `lib/action-scheduler/` so the plugin can run without Composer in environments that don't provide AS.
+- Updated loader to prefer `lib/action-scheduler/action-scheduler.php` over `vendor/woocommerce/action-scheduler/action-scheduler.php`, and to skip initialization when Action Scheduler is already provided by another plugin (via function/class/version checks).
+
+#### 🧾 Documentation
+- Clarified requirements and load order in readme to reflect the bundled Action Scheduler option and safe initialization behavior.
+
 ### 2.2.20 - Scheduled Actions Redirect and Permission Fixes
 
 #### 🐛 Bug Fixes

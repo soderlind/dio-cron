@@ -3,7 +3,7 @@ Contributors: PerS
 Tags: cron, multisite, wp-cron, action-scheduler, admin-interface, security
 Requires at least: 6.5
 Tested up to: 6.8
-Stable tag: 2.2.20
+Stable tag: 2.2.21
 Requires PHP: 8.2
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -40,19 +40,20 @@ DIO Cron triggers WordPress cron jobs across all public sites in your multisite 
 
 == Installation ==
 
-1. Upload the `dio-cron` folder to the `/wp-content/plugins/` directory.
-2. Network activate the plugin through the 'Network->Plugins' menu in WordPress.
-3. Go to **Network Admin → DIO Cron** to manage everything
-4. **Generate a security token** in the Security Status panel
-5. Disable WordPress default cron in `wp-config.php`:
-   ```php
-   define( 'DISABLE_WP_CRON', true );
-   ```
+1. Download [`dio-cron.zip`](https://github.com/soderlind/dio-cron/releases/latest/download/dio-cron.zip)
+2. Upload via  Network > Plugins > Add New > Upload Plugin
+3. Activate the plugin.
+4. Go to **Network Admin → DIO Cron** to manage everything
+5. **Generate a security token** in the Security Status panel
+6. Disable WordPress default cron in `wp-config.php`:
+`
+define( 'DISABLE_WP_CRON', true );
+`
 
 = Alternative Installation Methods =
 
 **Install via Composer:**
-```bash
+```
 composer require soderlind/dio-cron
 ```
 
@@ -67,7 +68,13 @@ Automatic updates directly from GitHub:
 
 * WordPress Multisite installation
 * Super Admin access (`manage_network_options` capability)
-* Action Scheduler 3.8+ (automatically installed via Composer)
+* Action Scheduler 3.8+ (bundled in `lib/action-scheduler/` or installed via Composer)
+
+If another plugin doesn’t provide Action Scheduler, DIO Cron will load a bundled copy if present. Preferred load order:
+
+1. `lib/action-scheduler/action-scheduler.php` (preferred)
+2. `vendor/woocommerce/action-scheduler/action-scheduler.php` (fallback)
+3. Existing Action Scheduler from other plugins (auto-detected)
 
 = Security Setup =
 
@@ -294,6 +301,10 @@ DIO Cron includes detailed logging for debugging wp-cron triggers, but this feat
 1. No screenshots available.
 
 == Changelog ==
+
+= 2.2.21 =
+* Enhancement: Bundled Action Scheduler under `lib/action-scheduler/` and updated loader to prefer `lib/` over `vendor/`, while safely skipping initialization when another plugin provides Action Scheduler.
+* Docs: Clarified load order and requirements to reflect bundled Action Scheduler option.
 
 = 2.2.20 =
 * Fix: Prevented "Cannot modify header information - headers already sent" warnings by removing embedded Action Scheduler UI and adding an early redirect to the native page before any output.
