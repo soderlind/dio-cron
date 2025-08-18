@@ -40,19 +40,20 @@ DIO Cron triggers WordPress cron jobs across all public sites in your multisite 
 
 == Installation ==
 
-1. Upload the `dio-cron` folder to the `/wp-content/plugins/` directory.
-2. Network activate the plugin through the 'Network->Plugins' menu in WordPress.
-3. Go to **Network Admin → DIO Cron** to manage everything
-4. **Generate a security token** in the Security Status panel
-5. Disable WordPress default cron in `wp-config.php`:
-   ```php
-   define( 'DISABLE_WP_CRON', true );
-   ```
+1. Download [`dio-cron.zip`](https://github.com/soderlind/dio-cron/releases/latest/download/dio-cron.zip)
+2. Upload via  Network > Plugins > Add New > Upload Plugin
+3. Activate the plugin.
+4. Go to **Network Admin → DIO Cron** to manage everything
+5. **Generate a security token** in the Security Status panel
+6. Disable WordPress default cron in `wp-config.php`:
+`
+define( 'DISABLE_WP_CRON', true );
+`
 
 = Alternative Installation Methods =
 
 **Install via Composer:**
-```bash
+```
 composer require soderlind/dio-cron
 ```
 
