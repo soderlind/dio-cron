@@ -45,10 +45,12 @@ class DIO_Cron_Queue_Manager {
 		}
 
 		$queued_count = 0;
-		$errors       = [];
+		// Generate a run ID for this batch and pass it to each action so we can finalize stats when done.
+		$run_id = DIO_Cron_Utilities::generate_run_id();
+		$errors = [];
 
 		foreach ( (array) $sites as $site ) {
-			$result = $this->enqueue_site_cron_job( $site );
+			$result = $this->enqueue_site_cron_job( $site, $run_id );
 			if ( is_wp_error( $result ) ) {
 				$errors[] = DIO_Cron_Utilities::format_site_error(
 					$site->siteurl,
@@ -62,6 +64,11 @@ class DIO_Cron_Queue_Manager {
 
 		$end_time       = microtime( true );
 		$execution_time = DIO_Cron_Utilities::calculate_execution_time( $start_time, $end_time );
+
+		// Start run tracking if we queued anything at all
+		if ( $queued_count > 0 ) {
+			DIO_Cron_Utilities::start_new_run( $run_id, (int) $queued_count );
+		}
 
 		if ( ! empty( $errors ) ) {
 			return DIO_Cron_Utilities::create_error_response( implode( "\n", $errors ) );
@@ -84,7 +91,7 @@ class DIO_Cron_Queue_Manager {
 	 * @param object $site Site object.
 	 * @return true|\WP_Error
 	 */
-	public function enqueue_site_cron_job( $site ) {
+	public function enqueue_site_cron_job( $site, string $run_id = '' ) {
 		if ( ! DIO_Cron_Utilities::action_scheduler_function_exists( 'as_enqueue_async_action' ) ) {
 			return DIO_Cron_Utilities::create_action_scheduler_error();
 		}
@@ -92,6 +99,7 @@ class DIO_Cron_Queue_Manager {
 		$site_data = [ 
 			$site->blog_id,    // First parameter: int $site_id
 			$site->siteurl,    // Second parameter: string $site_url
+			$run_id,           // Third parameter: string $run_id (optional)
 		];
 
 		$action_id = as_enqueue_async_action(

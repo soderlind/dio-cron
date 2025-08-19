@@ -1,5 +1,19 @@
 ## ⚙️ Changelog
 
+### 2.4.0 - Accurate Network Stats & Translations
+
+#### ✨ Enhancements
+- Accurate Network-Wide Stats: Stats now update when processing completes, not at enqueue time. A run ID tracks each batch; totals and last run are finalized once all queued sites finish.
+- Safer Admin Rendering: Hardened stats UI with safe defaults, localized number formatting via `number_format_i18n()`, and human-friendly "%s ago" display for last run.
+
+#### 🌐 Internationalization
+- Text Domain Loading: The plugin now loads translations from `languages/` on `init` using `load_plugin_textdomain( 'dio-cron' )`.
+- Translation Template: Added/updated `languages/dio-cron.pot` for translators.
+
+#### 🧰 Internal
+- Action Scheduler hook updated to accept three args (`site_id`, `site_url`, `run_id`).
+- Removed enqueue-time stats updates to prevent double counting.
+
 ### 2.3.2 - Admin Header Warning Fix
 
 #### 🐛 Bug Fixes
