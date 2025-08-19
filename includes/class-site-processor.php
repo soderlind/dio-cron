@@ -63,7 +63,7 @@ class DIO_Cron_Site_Processor {
 	 * @throws \Exception When site not found or cron fails.
 	 * @return void
 	 */
-	public function process_single_site( int $site_id, string $site_url = '' ): void {
+	public function process_single_site( int $site_id, string $site_url = '', string $run_id = '' ): void {
 		$start_time = microtime( true );
 
 		// Log the start of processing.
@@ -109,6 +109,12 @@ class DIO_Cron_Site_Processor {
 					$execution_time
 				)
 			);
+
+			// Increment run processed counter even on failure to ensure batch completion is tracked.
+			if ( method_exists( '\\Soderlind\\Multisite\\DioCron\\DIO_Cron_Utilities', 'increment_run_processed' ) ) {
+				DIO_Cron_Utilities::increment_run_processed( $run_id );
+				DIO_Cron_Utilities::finalize_run_if_complete();
+			}
 			throw new \Exception(
 				sprintf(
 					// translators: %1$s is the site URL, %2$s is the error message.
@@ -128,6 +134,12 @@ class DIO_Cron_Site_Processor {
 				$execution_time
 			)
 		);
+
+		// Increment run processed counter on success and finalize if done.
+		if ( method_exists( '\\Soderlind\\Multisite\\DioCron\\DIO_Cron_Utilities', 'increment_run_processed' ) ) {
+			DIO_Cron_Utilities::increment_run_processed( $run_id );
+			DIO_Cron_Utilities::finalize_run_if_complete();
+		}
 
 		// Log successful processing if needed.
 		do_action( 'dio_cron_site_processed', $site_id, $site_url, $result );

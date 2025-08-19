@@ -1,0 +1,705 @@
+# Copyright (C) 2025 Per Soderlind
+# This file is distributed under the GPL-2.0+.
+msgid ""
+msgstr ""
+"Project-Id-Version: DIO Cron 2.4.0\n"
+"Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/dio-cron\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"POT-Creation-Date: 2025-08-19T10:32:16+00:00\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"X-Generator: WP-CLI 2.12.0\n"
+"X-Domain: dio-cron\n"
+
+#. Plugin Name of the plugin
+#: dio-cron.php
+#: includes/class-admin.php:210
+#: includes/class-admin.php:211
+#: includes/class-admin.php:235
+#: includes/class-admin.php:236
+#: includes/class-admin.php:548
+msgid "DIO Cron"
+msgstr ""
+
+#. Plugin URI of the plugin
+#: dio-cron.php
+msgid "https://github.com/soderlind/dio-cron"
+msgstr ""
+
+#. Description of the plugin
+#: dio-cron.php
+msgid "Run wp-cron on all public sites in a multisite network with Action Scheduler integration, security token authentication, and comprehensive network admin interface."
+msgstr ""
+
+#. Author of the plugin
+#: dio-cron.php
+msgid "Per Soderlind"
+msgstr ""
+
+#. Author URI of the plugin
+#: dio-cron.php
+msgid "https://soderlind.no"
+msgstr ""
+
+#: dio-cron.php:76
+#: includes/class-utilities.php:423
+msgid "This plugin requires WordPress Multisite"
+msgstr ""
+
+#: dio-cron.php:87
+#: includes/class-utilities.php:432
+msgid "No public sites found in the network"
+msgstr ""
+
+#: includes/class-admin.php:118
+#: includes/class-admin.php:119
+#: includes/class-admin.php:167
+msgid "Scheduled Actions"
+msgstr ""
+
+#: includes/class-admin.php:169
+msgid "Open Scheduled Actions"
+msgstr ""
+
+#: includes/class-admin.php:273
+msgid "Security check failed."
+msgstr ""
+
+#: includes/class-admin.php:292
+msgid "Queue cleared successfully"
+msgstr ""
+
+#: includes/class-admin.php:300
+msgid "Rewrite rules completely regenerated. Permalinks should now work."
+msgstr ""
+
+#. translators: %s: Error message
+#: includes/class-admin.php:312
+#, php-format
+msgid "Failed to retrieve sites: %s"
+msgstr ""
+
+#. translators: 1: site URL, 2: error message
+#: includes/class-admin.php:330
+#, php-format
+msgid "Site %1$s test failed: %2$s"
+msgstr ""
+
+#. translators: 1: site URL, 2: response code, 3: execution time
+#: includes/class-admin.php:340
+#, php-format
+msgid "Site %1$s test successful! Response code: %2$d (%3$.2fs)"
+msgstr ""
+
+#. translators: %s: Site URL
+#: includes/class-admin.php:349
+#, php-format
+msgid "Site with URL %s not found in this multisite network."
+msgstr ""
+
+#: includes/class-admin.php:352
+msgid "Please select a site URL to test."
+msgstr ""
+
+#. translators: %d: Number of actions processed
+#: includes/class-admin.php:440
+#, php-format
+msgid "Manually triggered %d pending actions (they will be marked complete by Action Scheduler)"
+msgstr ""
+
+#. translators: %1$d: Number of actions processed, %2$d: Number of errors
+#: includes/class-admin.php:443
+#, php-format
+msgid "Manually triggered %1$d pending actions (%2$d errors)"
+msgstr ""
+
+#: includes/class-admin.php:447
+msgid "No valid actions could be triggered"
+msgstr ""
+
+#. translators: %d: Number of errors
+#: includes/class-admin.php:450
+#, php-format
+msgid "No valid actions could be triggered (%d errors)"
+msgstr ""
+
+#: includes/class-admin.php:455
+msgid "No pending actions found to process"
+msgstr ""
+
+#: includes/class-admin.php:458
+msgid "Action Scheduler not available"
+msgstr ""
+
+#: includes/class-admin.php:465
+msgid "New endpoint token generated successfully"
+msgstr ""
+
+#: includes/class-admin.php:467
+msgid "Failed to save new token"
+msgstr ""
+
+#: includes/class-admin.php:475
+msgid "Token must be at least 16 characters long"
+msgstr ""
+
+#: includes/class-admin.php:477
+msgid "Endpoint token updated successfully"
+msgstr ""
+
+#: includes/class-admin.php:479
+msgid "Failed to save token"
+msgstr ""
+
+#: includes/class-admin.php:482
+msgid "Please provide a token"
+msgstr ""
+
+#: includes/class-admin.php:488
+msgid "Endpoint token deleted. Cron endpoint is now disabled!"
+msgstr ""
+
+#: includes/class-admin.php:490
+msgid "Failed to delete token"
+msgstr ""
+
+#: includes/class-admin.php:497
+msgid "Detailed logging requires WP_DEBUG to be enabled in wp-config.php"
+msgstr ""
+
+#: includes/class-admin.php:506
+msgid "Detailed logging enabled. Check your error logs for DIO Cron activity."
+msgstr ""
+
+#: includes/class-admin.php:508
+msgid "Detailed logging disabled."
+msgstr ""
+
+#: includes/class-admin.php:554
+msgid "WordPress Cron Configuration Warning"
+msgstr ""
+
+#: includes/class-admin.php:556
+msgid "DISABLE_WP_CRON is not set to true."
+msgstr ""
+
+#: includes/class-admin.php:557
+msgid "For optimal performance and to prevent conflicts, WordPress's built-in cron should be disabled when using DIO Cron with Action Scheduler."
+msgstr ""
+
+#: includes/class-admin.php:560
+msgid "Having both systems running can cause:"
+msgstr ""
+
+#: includes/class-admin.php:563
+msgid "Duplicate cron job executions"
+msgstr ""
+
+#: includes/class-admin.php:564
+msgid "Increased server load and memory usage"
+msgstr ""
+
+#: includes/class-admin.php:565
+msgid "Unpredictable cron job scheduling"
+msgstr ""
+
+#: includes/class-admin.php:566
+msgid "Potential race conditions between systems"
+msgstr ""
+
+#: includes/class-admin.php:569
+msgid "To fix this, add the following line to your wp-config.php file:"
+msgstr ""
+
+#: includes/class-admin.php:577
+msgid "Important:"
+msgstr ""
+
+#: includes/class-admin.php:578
+msgid "After adding this constant, set up a system cron job to trigger the DIO Cron endpoint instead of wp-cron.php. Look in the Endpoints pane for the URL to /dio-cron for optimal multisite cron management."
+msgstr ""
+
+#: includes/class-admin.php:585
+msgid "DIO Cron Statistics"
+msgstr ""
+
+#: includes/class-admin.php:588
+msgid "Queue Status"
+msgstr ""
+
+#: includes/class-admin.php:595
+msgid "Pending Actions"
+msgstr ""
+
+#: includes/class-admin.php:599
+msgid "In Progress"
+msgstr ""
+
+#: includes/class-admin.php:603
+msgid "Failed Actions"
+msgstr ""
+
+#: includes/class-admin.php:611
+msgid "Processing Statistics (Today)"
+msgstr ""
+
+#: includes/class-admin.php:618
+msgid "Completed"
+msgstr ""
+
+#: includes/class-admin.php:622
+msgid "Failed"
+msgstr ""
+
+#: includes/class-admin.php:626
+msgid "Success Rate"
+msgstr ""
+
+#: includes/class-admin.php:634
+msgid "Network-Wide Stats"
+msgstr ""
+
+#: includes/class-admin.php:638
+msgid "Total Runs"
+msgstr ""
+
+#: includes/class-admin.php:643
+msgid "Sites Processed (Last Run)"
+msgstr ""
+
+#: includes/class-admin.php:648
+msgid "Last Run"
+msgstr ""
+
+#: includes/class-admin.php:656
+#, php-format
+msgid "%s ago"
+msgstr ""
+
+#: includes/class-admin.php:658
+msgid "Never"
+msgstr ""
+
+#: includes/class-admin.php:669
+msgid "Quick Actions"
+msgstr ""
+
+#: includes/class-admin.php:676
+msgid "Queue All Sites Now"
+msgstr ""
+
+#: includes/class-admin.php:683
+msgid "Clear Queue"
+msgstr ""
+
+#: includes/class-admin.php:684
+msgid "Are you sure you want to clear the queue?"
+msgstr ""
+
+#: includes/class-admin.php:691
+msgid "Fix Permalinks"
+msgstr ""
+
+#: includes/class-admin.php:692
+msgid "Flush rewrite rules to fix the /dio-cron endpoint"
+msgstr ""
+
+#: includes/class-admin.php:699
+msgid "Force Process Queue"
+msgstr ""
+
+#: includes/class-admin.php:700
+msgid "Manually process pending queue items for testing"
+msgstr ""
+
+#: includes/class-admin.php:704
+#: includes/class-admin.php:1121
+msgid "View Action Scheduler"
+msgstr ""
+
+#: includes/class-admin.php:714
+msgid "Disable Detailed Logging"
+msgstr ""
+
+#: includes/class-admin.php:714
+msgid "Enable Detailed Logging"
+msgstr ""
+
+#: includes/class-admin.php:715
+msgid "Toggle detailed logging to error log for debugging wp-cron triggers"
+msgstr ""
+
+#: includes/class-admin.php:722
+msgid "Logging: ON"
+msgstr ""
+
+#: includes/class-admin.php:727
+msgid "Logging: OFF"
+msgstr ""
+
+#: includes/class-admin.php:737
+msgid "Site Diagnostics"
+msgstr ""
+
+#: includes/class-admin.php:739
+msgid "Test individual sites for connectivity issues:"
+msgstr ""
+
+#: includes/class-admin.php:746
+msgid "Select Site:"
+msgstr ""
+
+#: includes/class-admin.php:748
+msgid "Choose a site to test..."
+msgstr ""
+
+#: includes/class-admin.php:752
+#, php-format
+msgid "Error loading sites: %s"
+msgstr ""
+
+#: includes/class-admin.php:755
+msgid "No sites found in this network"
+msgstr ""
+
+#: includes/class-admin.php:769
+msgid "Test Site"
+msgstr ""
+
+#: includes/class-admin.php:778
+msgid "Endpoints"
+msgstr ""
+
+#: includes/class-admin.php:787
+msgid "Token Required!"
+msgstr ""
+
+#: includes/class-admin.php:788
+msgid "Generate a token in the Security Status section to enable endpoints."
+msgstr ""
+
+#: includes/class-admin.php:793
+msgid "Action Scheduler Queue:"
+msgstr ""
+
+#: includes/class-admin.php:805
+msgid "Legacy Mode:"
+msgstr ""
+
+#: includes/class-admin.php:817
+msgid "GitHub Actions:"
+msgstr ""
+
+#: includes/class-admin.php:832
+msgid "Security Status"
+msgstr ""
+
+#: includes/class-admin.php:910
+msgid "Token Protection"
+msgstr ""
+
+#: includes/class-admin.php:914
+msgid "Configured"
+msgstr ""
+
+#: includes/class-admin.php:918
+msgid "Required"
+msgstr ""
+
+#: includes/class-admin.php:924
+msgid "Rate Limiting"
+msgstr ""
+
+#: includes/class-admin.php:927
+msgid "Active"
+msgstr ""
+
+#: includes/class-admin.php:932
+msgid "Execution Lock"
+msgstr ""
+
+#: includes/class-admin.php:936
+msgid "Currently locked"
+msgstr ""
+
+#: includes/class-admin.php:940
+msgid "Available"
+msgstr ""
+
+#: includes/class-admin.php:946
+msgid "Client IP"
+msgstr ""
+
+#: includes/class-admin.php:956
+msgid "Token Management"
+msgstr ""
+
+#: includes/class-admin.php:960
+msgid "Current Token:"
+msgstr ""
+
+#: includes/class-admin.php:963
+msgid "Click to select and copy"
+msgstr ""
+
+#: includes/class-admin.php:971
+msgid "Generate New Token"
+msgstr ""
+
+#: includes/class-admin.php:972
+msgid "This will invalidate the current token. Update your cron calls! Continue?"
+msgstr ""
+
+#: includes/class-admin.php:979
+msgid "Delete Token"
+msgstr ""
+
+#: includes/class-admin.php:980
+msgid "This will disable the endpoint! Are you sure?"
+msgstr ""
+
+#: includes/class-admin.php:986
+msgid "No token configured!"
+msgstr ""
+
+#: includes/class-admin.php:987
+msgid "The cron endpoint is disabled. Generate a token to enable it."
+msgstr ""
+
+#: includes/class-admin.php:994
+msgid "Generate Token"
+msgstr ""
+
+#: includes/class-admin.php:1001
+msgid "Custom Token"
+msgstr ""
+
+#: includes/class-admin.php:1007
+msgid "Enter custom token (min 16 chars)"
+msgstr ""
+
+#: includes/class-admin.php:1010
+msgid "Set Custom Token"
+msgstr ""
+
+#: includes/class-admin.php:1012
+msgid "Use a strong, random token for security"
+msgstr ""
+
+#: includes/class-admin.php:1051
+msgid "All endpoints require the token parameter."
+msgstr ""
+
+#: includes/class-admin.php:1052
+msgid "No token configured. Generate a token in Security Status to enable endpoints."
+msgstr ""
+
+#: includes/class-admin.php:1058
+msgid "Overview"
+msgstr ""
+
+#: includes/class-admin.php:1060
+msgid "DIO Cron coordinates multisite cron execution using Action Scheduler and external triggering."
+msgstr ""
+
+#: includes/class-admin.php:1062
+msgid "DIO Cron Statistics: queue status, processing counts, and network-wide statistics."
+msgstr ""
+
+#: includes/class-admin.php:1063
+msgid "Quick Actions: queue all sites, clear queue, fix permalinks, and force process queue."
+msgstr ""
+
+#: includes/class-admin.php:1064
+msgid "Site Diagnostics: test individual sites for connectivity issues."
+msgstr ""
+
+#: includes/class-admin.php:1065
+msgid "Endpoints: secure URLs for external schedulers (server cron, Pingdom, GitHub Actions)."
+msgstr ""
+
+#: includes/class-admin.php:1066
+msgid "Security Status: token protection, rate limiting, execution locks, and token management."
+msgstr ""
+
+#: includes/class-admin.php:1075
+msgid "Endpoints & Security"
+msgstr ""
+
+#: includes/class-admin.php:1077
+msgid "Use these endpoints from your external scheduler. Authentication with token is mandatory."
+msgstr ""
+
+#: includes/class-admin.php:1078
+msgid "Endpoints:"
+msgstr ""
+
+#: includes/class-admin.php:1081
+msgid "(Legacy immediate mode)"
+msgstr ""
+
+#: includes/class-admin.php:1082
+msgid "(GitHub Actions output)"
+msgstr ""
+
+#: includes/class-admin.php:1092
+msgid "Queue & Processing"
+msgstr ""
+
+#: includes/class-admin.php:1094
+msgid "DIO Cron is triggered via external endpoints to process all sites. Jobs are queued per site and processed by Action Scheduler with built-in locking to prevent concurrency."
+msgstr ""
+
+#: includes/class-admin.php:1096
+msgid "Use \"Queue All Sites Now\" for manual processing."
+msgstr ""
+
+#: includes/class-admin.php:1097
+msgid "Set up external schedulers (server cron, Pingdom, GitHub Actions) to trigger endpoints automatically."
+msgstr ""
+
+#: includes/class-admin.php:1098
+msgid "Use \"Force Process Queue\" to manually trigger pending actions for testing."
+msgstr ""
+
+#: includes/class-admin.php:1099
+msgid "View detailed action logs under \"Scheduled Actions\" submenu."
+msgstr ""
+
+#: includes/class-admin.php:1108
+msgid "Troubleshooting"
+msgstr ""
+
+#: includes/class-admin.php:1110
+msgid "Add ?token=YOUR_TOKEN to the URL or generate a token in Security Status."
+msgstr ""
+
+#: includes/class-admin.php:1111
+msgid "Rate limit exceeded (5 requests/5 minutes). Wait and retry."
+msgstr ""
+
+#: includes/class-admin.php:1112
+msgid "Another run is in progress. Wait up to 5 minutes."
+msgstr ""
+
+#: includes/class-admin.php:1113
+msgid "If /dio-cron returns 404, use Fix Permalinks or resave Settings → Permalinks."
+msgstr ""
+
+#: includes/class-admin.php:1114
+msgid "Debugging:"
+msgstr ""
+
+#: includes/class-admin.php:1114
+msgid "Enable detailed logging to track wp-cron.php requests to each site in your error log. Logging is only available when WP_DEBUG is enabled for security."
+msgstr ""
+
+#: includes/class-admin.php:1120
+msgid "Quick Links"
+msgstr ""
+
+#: includes/class-admin.php:1122
+msgid "Security Status section"
+msgstr ""
+
+#: includes/class-dio-cron.php:102
+msgid "DIO Cron requires the Action Scheduler plugin. Please install and activate Action Scheduler."
+msgstr ""
+
+#: includes/class-dio-cron.php:208
+msgid "Cron job already running"
+msgstr ""
+
+#: includes/class-dio-cron.php:272
+msgid "Rate limit exceeded. Please try again later."
+msgstr ""
+
+#: includes/class-dio-cron.php:283
+msgid "Authentication required. Configure token in DIO Cron admin."
+msgstr ""
+
+#. translators: %d: number of sites queued for cron processing
+#: includes/class-queue-manager.php:80
+#, php-format
+msgid "Queued %d sites for cron processing"
+msgstr ""
+
+#: includes/class-queue-manager.php:112
+msgid "Failed to queue action"
+msgstr ""
+
+#: includes/class-queue-manager.php:153
+msgid "Failed to schedule recurring action"
+msgstr ""
+
+#. translators: %d is the site ID.
+#: includes/class-site-processor.php:84
+#, php-format
+msgid "Site with ID %d not found"
+msgstr ""
+
+#. translators: %1$s is the site URL, %2$s is the error message.
+#: includes/class-site-processor.php:121
+#, php-format
+msgid "Cron failed for %1$s: %2$s"
+msgstr ""
+
+#: includes/class-site-processor.php:171
+#, php-format
+msgid "Invalid cron URL: %s"
+msgstr ""
+
+#. translators: 1: cron URL, 2: execution time in seconds, 3: timeout limit in seconds
+#: includes/class-site-processor.php:226
+#, php-format
+msgid "DIO Cron timeout: %1$s (took %2$.2fs, timeout was %3$ds)"
+msgstr ""
+
+#. translators: %d is the HTTP response code.
+#: includes/class-site-processor.php:276
+#, php-format
+msgid "HTTP %d: Cron request failed"
+msgstr ""
+
+#: includes/class-site-processor.php:317
+#: includes/class-utilities.php:443
+msgid "No sites provided for processing"
+msgstr ""
+
+#. translators: %d is the number of sites processed.
+#: includes/class-site-processor.php:358
+#, php-format
+msgid "Processed %d sites successfully"
+msgstr ""
+
+#: includes/class-utilities.php:255
+#: includes/class-utilities.php:265
+msgid "Action Scheduler is not available"
+msgstr ""
+
+#: includes/class-utilities.php:323
+msgid "Invalid site object"
+msgstr ""
+
+#: includes/class-utilities.php:327
+msgid "Site URL is missing"
+msgstr ""
+
+#: includes/class-utilities.php:331
+msgid "Site is not public"
+msgstr ""
+
+#: includes/class-utilities.php:332
+msgid "Site is archived"
+msgstr ""
+
+#: includes/class-utilities.php:333
+msgid "Site is deleted"
+msgstr ""
+
+#: includes/class-utilities.php:334
+msgid "Site is marked as spam"
+msgstr ""

@@ -281,12 +281,6 @@ class DIO_Cron_Admin {
 			case 'queue_all_sites':
 				$result = $queue_manager->enqueue_all_sites();
 
-				// Update network-wide statistics
-				$sites_count = (int) ( $result[ 'count' ] ?? 0 );
-				if ( $sites_count > 0 ) {
-					DIO_Cron_Utilities::update_network_stats( $sites_count );
-				}
-
 				$this->add_admin_notice(
 					$result[ 'success' ] ? 'success' : 'error',
 					$result[ 'message' ]
@@ -539,7 +533,15 @@ class DIO_Cron_Admin {
 
 		$queue_status     = $queue_manager->get_queue_status();
 		$processing_stats = $site_processor->get_processing_stats();
-		$network_stats    = DIO_Cron_Utilities::get_network_stats();
+		// Use safe defaults to avoid undefined index notices and ensure proper types.
+		$network_stats = wp_parse_args(
+			DIO_Cron_Utilities::get_network_stats(),
+			[ 
+				'total_runs'               => 0,
+				'sites_processed_last_run' => 0,
+				'last_run'                 => 0,
+			]
+		);
 
 		?>
 		<div class="wrap dio-cron-admin-page">
@@ -568,8 +570,8 @@ class DIO_Cron_Admin {
 					</p>
 					<p>
 						<code style="background: #f1f1f1; padding: 4px 8px; font-family: 'Courier New', monospace;">
-																																																																																																																																																							define( 'DISABLE_WP_CRON', true );
-																																																																																																																																																						</code>
+																																																																																																																																																										define( 'DISABLE_WP_CRON', true );
+																																																																																																																																																									</code>
 					</p>
 					<p>
 						<strong><?php esc_html_e( 'Important:', 'dio-cron' ); ?></strong>
@@ -634,15 +636,28 @@ class DIO_Cron_Admin {
 							<tbody>
 								<tr>
 									<td><strong><?php esc_html_e( 'Total Runs', 'dio-cron' ); ?></strong></td>
-									<td><?php echo intval( $network_stats[ 'total_runs' ] ); ?></td>
+									<td><?php echo esc_html( number_format_i18n( (int) $network_stats[ 'total_runs' ] ) ); ?>
+									</td>
 								</tr>
 								<tr>
 									<td><strong><?php esc_html_e( 'Sites Processed (Last Run)', 'dio-cron' ); ?></strong></td>
-									<td><?php echo intval( $network_stats[ 'sites_processed_last_run' ] ?? 0 ); ?></td>
+									<td><?php echo esc_html( number_format_i18n( (int) ( $network_stats[ 'sites_processed_last_run' ] ?? 0 ) ) ); ?>
+									</td>
 								</tr>
 								<tr>
 									<td><strong><?php esc_html_e( 'Last Run', 'dio-cron' ); ?></strong></td>
-									<td><?php echo $network_stats[ 'last_run' ] ? esc_html( date_i18n( get_option( 'date_format' ) . ' ' . get_option( 'time_format' ), $network_stats[ 'last_run' ] ) ) : esc_html__( 'Never', 'dio-cron' ); ?>
+									<td>
+										<?php
+										$last_run_ts = (int) $network_stats[ 'last_run' ];
+										if ( $last_run_ts > 0 ) {
+											$formatted = date_i18n( get_option( 'date_format' ) . ' ' . get_option( 'time_format' ), $last_run_ts );
+											$ago       = human_time_diff( $last_run_ts, current_time( 'timestamp' ) );
+											// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Individually escaped parts concatenated
+											echo esc_html( $formatted ) . ' <span class="description">(' . esc_html( sprintf( __( '%s ago', 'dio-cron' ), $ago ) ) . ')</span>';
+										} else {
+											esc_html_e( 'Never', 'dio-cron' );
+										}
+										?>
 									</td>
 								</tr>
 							</tbody>
@@ -783,8 +798,8 @@ class DIO_Cron_Admin {
 							</a>
 						<?php else : ?>
 							<code class="dio-cron-disabled-endpoint">
-																																																																																																																																<?php echo esc_url( home_url( '/dio-cron?token=YOUR_TOKEN_HERE' ) ); ?>
-																																																																																																																															</code>
+																																																																																																																																			<?php echo esc_url( home_url( '/dio-cron?token=YOUR_TOKEN_HERE' ) ); ?>
+																																																																																																																																		</code>
 						<?php endif; ?>
 
 						<p><strong><?php esc_html_e( 'Legacy Mode:', 'dio-cron' ); ?></strong></p>
@@ -795,8 +810,8 @@ class DIO_Cron_Admin {
 							</a>
 						<?php else : ?>
 							<code class="dio-cron-disabled-endpoint">
-																																																																																																																																<?php echo esc_url( home_url( '/dio-cron?immediate=1&token=YOUR_TOKEN_HERE' ) ); ?>
-																																																																																																																															</code>
+																																																																																																																																			<?php echo esc_url( home_url( '/dio-cron?immediate=1&token=YOUR_TOKEN_HERE' ) ); ?>
+																																																																																																																																		</code>
 						<?php endif; ?>
 
 						<p><strong><?php esc_html_e( 'GitHub Actions:', 'dio-cron' ); ?></strong></p>
@@ -807,8 +822,8 @@ class DIO_Cron_Admin {
 							</a>
 						<?php else : ?>
 							<code class="dio-cron-disabled-endpoint">
-																																																																																																																																<?php echo esc_url( home_url( '/dio-cron?ga&token=YOUR_TOKEN_HERE' ) ); ?>
-																																																																																																																															</code>
+																																																																																																																																			<?php echo esc_url( home_url( '/dio-cron?ga&token=YOUR_TOKEN_HERE' ) ); ?>
+																																																																																																																																		</code>
 						<?php endif; ?>
 					</div>
 				</div>

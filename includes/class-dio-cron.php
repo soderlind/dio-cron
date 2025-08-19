@@ -21,7 +21,7 @@ class DIO_Cron {
 	 *
 	 * @var string VERSION Plugin version
 	 */
-	const VERSION = '2.3.2';    /**
+	const VERSION = '2.4.0';    /**
 			* Instance of the queue manager
 			*
 			* @var DIO_Cron_Queue_Manager
@@ -126,15 +126,30 @@ class DIO_Cron {
 		// Initialize rewrite rules.
 		add_action( 'init', [ $this, 'init_rewrite_rules' ] );
 
+		// Load translations from the plugin languages folder.
+		add_action( 'init', [ $this, 'load_textdomain' ] );
+
 		// Handle template redirect.
 		add_action( 'template_redirect', [ $this, 'handle_template_redirect' ] );
 
 		// Register custom action hooks for Action Scheduler.
-		add_action( DIO_Cron_Utilities::PROCESS_SITE_HOOK, [ $this->site_processor, 'process_single_site' ] );
+		add_action( DIO_Cron_Utilities::PROCESS_SITE_HOOK, [ $this->site_processor, 'process_single_site' ], 10, 3 );
 		add_action( DIO_Cron_Utilities::RUN_ALL_SITES_HOOK, [ $this->queue_manager, 'enqueue_all_sites' ] );
 
 		// Initialize admin interface for network admin.
 		add_action( 'init', [ $this, 'init_admin_interface' ] );
+	}
+
+	/**
+	 * Load plugin text domain for translations
+	 *
+	 * @return void
+	 */
+	public function load_textdomain(): void {
+		// Compute plugin relative languages directory like 'dio-cron/languages'.
+		$plugin_file     = dirname( __DIR__ ) . '/dio-cron.php';
+		$plugin_rel_path = dirname( plugin_basename( $plugin_file ) ) . '/languages';
+		load_plugin_textdomain( 'dio-cron', false, $plugin_rel_path );
 	}
 
 	/**
@@ -209,10 +224,12 @@ class DIO_Cron {
 					$result = $this->queue_manager->enqueue_all_sites();
 				}
 
-				// Update network-wide statistics.
-				$sites_count = (int) ( $result[ 'count' ] ?? 0 );
-				if ( $sites_count > 0 ) {
-					DIO_Cron_Utilities::update_network_stats( $sites_count );
+				// Update network-wide statistics only for immediate runs.
+				if ( $immediate ) {
+					$sites_count = (int) ( $result[ 'count' ] ?? 0 );
+					if ( $sites_count > 0 ) {
+						DIO_Cron_Utilities::update_network_stats( $sites_count );
+					}
 				}
 
 				// Log successful execution.

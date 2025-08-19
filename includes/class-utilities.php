@@ -24,6 +24,7 @@ class DIO_Cron_Utilities {
 	private const LEGACY_SITES_KEY  = 'dss_cron_sites';
 	private const EXEC_LOCK_KEY     = 'dio_cron_execution_lock';
 	private const LAST_RUN_KEY      = 'dio_cron_last_run';
+	private const CURRENT_RUN_KEY   = 'dio_cron_current_run';
 
 	/**
 	 * Common filter names and groups (DRY)
@@ -57,6 +58,88 @@ class DIO_Cron_Utilities {
 			'total_sites_processed'    => 0,
 			'sites_processed_last_run' => 0,
 		];
+	}
+
+	/**
+	 * Generate a unique run identifier for a batch
+	 *
+	 * @return string
+	 */
+	public static function generate_run_id(): string {
+		// Prefer random_bytes when available for better entropy, fallback to uniqid.
+		try {
+			if ( function_exists( 'random_bytes' ) ) {
+				return 'run_' . bin2hex( random_bytes( 8 ) ) . '_' . dechex( (int) ( microtime( true ) * 1000 ) );
+			}
+		} catch (\Throwable $e) {
+			// Fallback below.
+		}
+		return 'run_' . uniqid( '', true );
+	}
+
+	/**
+	 * Start tracking a new run (batch) of enqueued site cron actions
+	 *
+	 * @param string $run_id   Unique run identifier.
+	 * @param int    $expected Number of actions expected to complete (success or fail).
+	 * @return void
+	 */
+	public static function start_new_run( string $run_id, int $expected ): void {
+		$state = [ 
+			'run_id'     => $run_id,
+			'expected'   => max( 0, $expected ),
+			'processed'  => 0,
+			'started_at' => time(),
+		];
+		// Keep state for up to 6 hours.
+		self::site_cache_set( self::CURRENT_RUN_KEY, $state, 6 * HOUR_IN_SECONDS, self::CACHE_GROUP );
+	}
+
+	/**
+	 * Increment processed counter for the current run if run_id matches.
+	 *
+	 * @param string|null $run_id Run id from the processed action (optional but recommended).
+	 * @return array|null Updated state or null if no active run.
+	 */
+	public static function increment_run_processed( ?string $run_id ): ?array {
+		$state = self::site_cache_get( self::CURRENT_RUN_KEY, self::CACHE_GROUP );
+		if ( ! is_array( $state ) ) {
+			return null;
+		}
+		// If a run_id is provided, make sure it matches. If not provided, assume current run.
+		if ( ! empty( $run_id ) && isset( $state[ 'run_id' ] ) && $state[ 'run_id' ] !== $run_id ) {
+			return $state; // Ignore increments for other runs.
+		}
+		$state[ 'processed' ] = (int) ( $state[ 'processed' ] ?? 0 ) + 1;
+		self::site_cache_set( self::CURRENT_RUN_KEY, $state, 6 * HOUR_IN_SECONDS, self::CACHE_GROUP );
+		return $state;
+	}
+
+	/**
+	 * Finalize the current run if processed >= expected. Updates network stats and clears run state.
+	 *
+	 * @return array|null Finalized data including processed count, or null if not finalized.
+	 */
+	public static function finalize_run_if_complete(): ?array {
+		$state = self::site_cache_get( self::CURRENT_RUN_KEY, self::CACHE_GROUP );
+		if ( ! is_array( $state ) ) {
+			return null;
+		}
+		$expected  = (int) ( $state[ 'expected' ] ?? 0 );
+		$processed = (int) ( $state[ 'processed' ] ?? 0 );
+		if ( $expected > 0 && $processed >= $expected ) {
+			// Update network-wide stats with the processed count for this run.
+			self::update_network_stats( $processed );
+			// Clear current run state.
+			self::site_cache_delete( self::CURRENT_RUN_KEY, self::CACHE_GROUP );
+			return [ 
+				'finalized' => true,
+				'processed' => $processed,
+				'expected'  => $expected,
+				'run_id'    => $state[ 'run_id' ] ?? '',
+			];
+		}
+		return null;
 	}
 
 	/**
