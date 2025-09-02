@@ -1,3 +1,5 @@
+> NOTE: This is still work in progress, in production use [DSS Cron](https://github.com/soderlind/dss-cron)
+
 # DIO Cron
 
 Run cron jobs on all sites in a WordPress multisite network. Uses **Action Scheduler** for better reliability and performance.
